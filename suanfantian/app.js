@@ -55,7 +55,7 @@ function renderCats(){
 }
 function renderMenu(){
  const q=$('#search').value.trim().toLowerCase();
- const rows=MENU.filter(x=>(active==='全部'||x.cat===active)&&(!q||x.name.toLowerCase().includes(q)));
+ const rows=MENU.filter(x=>(active==='全部'||x.cat===active)&&(!q||x.name.toLowerCase().includes(q))).sort((a,b)=>b.price-a.price||a.name.localeCompare(b.name,'zh-Hant'));
  $('#menuCount').textContent=rows.length;
  $('#menu').innerHTML=rows.length?rows.map(x=>`
  <div class="item ${['古早味脆皮雞排','無骨鹽酥雞','魷魚頭','甜不辣','雞蛋豆腐'].includes(x.name)?'pop':''}">
