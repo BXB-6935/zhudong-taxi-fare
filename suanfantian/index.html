@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2c400">
+<title>蒜翻天鹽酥雞｜竹東東峰店</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="topline">
+      <div class="logo">
+        <div class="chicken">🐔</div>
+        <div>
+          <h1>蒜翻天 <span>鹽酥雞</span></h1>
+          <div class="tag">竹東東峰店｜新式炸法・獨特蒜味</div>
+        </div>
+      </div>
+      <div class="status" id="openStatus">營業狀態</div>
+    </div>
+    <div class="storebar">
+      <a class="storebtn" href="tel:0980603286">☎️ 0980-603-286</a>
+      <a class="storebtn" href="https://line.me/R/ti/p/@664awlma" target="_blank">💬 LINE @664awlma</a>
+      <a class="storebtn" href="https://www.google.com/maps/search/?api=1&query=新竹縣竹東鎮東峰路3號" target="_blank">📍 東峰路3號</a>
+      <div class="storebtn">🕒 15:00–23:30</div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-step active">① 選餐</div>
+      <div class="progress-step">② 確認</div>
+      <div class="progress-step">③ LINE送單</div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="card">
+    <div class="section-title"><span>📍 店家資訊</span><span style="font-size:11px;color:var(--muted)">餐點現做請耐心等候</span></div>
+    <div class="info-grid">
+      <div class="info"><small>店名</small><strong>蒜翻天鹽酥雞 竹東東峰店</strong></div>
+      <div class="info"><small>訂購專線</small><strong>0980-603-286</strong></div>
+      <div class="info"><small>地址</small><strong>新竹縣竹東鎮東峰路3號</strong></div>
+      <div class="info"><small>營業時間</small><strong>15:00–23:30</strong></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="search"><input id="search" placeholder="🔎 搜尋餐點，例如：雞排、豆腐、花椰菜"></div>
+  </section>
+
+  <div class="cat-wrap"><div class="cats" id="cats"></div></div>
+
+  <section class="card">
+    <div class="menu-head">
+      <div class="section-title" style="margin:0"><span>🍗 菜單</span><span class="badge" id="menuCount">0</span></div>
+      <small>點 ＋ 加入購物車</small>
+    </div>
+    <div class="menu-grid" id="menu"></div>
+  </section>
+
+  <section class="card">
+    <div class="section-title"><span>💬 LINE 募集中</span><span style="font-size:12px;color:#06a947">@664awlma</span></div>
+    <div class="qrbox">
+      <div style="width:120px;height:120px;border-radius:12px;background:#06c755;color:white;display:grid;place-items:center;text-align:center;font-weight:900;padding:10px">LINE<br>@664awlma</div>
+      <div>
+        <strong>加入 LINE 可取得優惠券</strong>
+        <p class="note">可先在本系統完成點餐，按「複製訂單＋開啟 LINE」後，把訂單內容貼給店家。</p>
+        <a class="primary linebtn" style="display:block;text-align:center;text-decoration:none" target="_blank" href="https://line.me/R/ti/p/@664awlma">加入 LINE</a>
+      </div>
+    </div>
+    <div class="note" style="display:block">LINE ID：<b>@664awlma</b></div>
+  </section>
+
+  <section class="card">
+    <div class="section-title"><span>🧾 最近訂單</span><button class="secondary" id="clearHistory" style="width:auto;padding:7px 10px;margin:0">清除</button></div>
+    <div id="history"></div>
+  </section>
+</main>
+
+<div class="bottom">
+  <div class="bottom-in">
+    <div><small><span id="cartCount">0</span> 項餐點</small><strong id="bottomTotal">NT$ 0</strong></div>
+    <button class="cartbtn" id="openCart">購物車／結帳</button>
+  </div>
+</div>
+
+<div class="sheet" id="cartSheet">
+  <div class="sheet-inner">
+    <div class="sheet-head"><div style="font-size:20px;font-weight:1000">🛒 購物車／送出訂單</div><button class="close" id="closeCart">✕</button></div>
+    <div id="cart"></div>
+    <div class="cart-summary">
+      <div class="cart-summary-row"><span>餐點數量</span><span id="cartQtySummary">0 份</span></div>
+      <div class="cart-summary-row"><span>取餐方式</span><span>到店自取</span></div>
+      <div class="cart-summary-row total2"><span>合計</span><span id="cartTotal">NT$ 0</span></div>
+    </div>
+
+    <div style="height:1px;background:var(--line);margin:14px 0"></div>
+    <div class="section-title"><span>訂購資料</span></div>
+    <div class="customer-memory">💾 姓名與電話會記在這支手機，下次自動帶入</div>
+    <p class="note">辣度請直接在每個餐點下方個別選擇；雞排品項可另外選擇「要切／不切」。</p>
+
+    <div class="two">
+      <div class="field"><label>姓名 *</label><input id="name" placeholder="請輸入姓名"></div>
+      <div class="field"><label>電話 *</label><input id="phone" inputmode="tel" placeholder="09xxxxxxxx"></div>
+    </div>
+    <div class="two">
+      <div class="field"><label>取餐日期 *</label><input id="date" type="date"></div>
+      <div class="field"><label>預計取餐時間 *</label><input id="time" type="time"></div>
+    </div>
+    <div class="quick-time-wrap" id="quickTimes"></div>
+    <p class="note" id="prepHint">最快取餐時間會依目前時間自動計算。</p>
+    <div class="field"><label>胡椒</label>
+      <select id="pepper"><option>正常</option><option>少胡椒</option><option>不要胡椒</option></select>
+    </div>
+    <div class="field"><label>訂單備註</label><textarea id="note" placeholder="例如：蒜多一點、分開裝、餐具需求"></textarea></div>
+
+    <button class="primary primary-cta" id="previewOrder">預覽訂單</button>
+    <div class="preview-box" id="previewBox">
+      <div class="section-title"><span>🔎 最後確認</span><span style="font-size:11px;color:var(--muted)">確認後再送 LINE</span></div>
+      <div class="preview-list" id="previewText"></div>
+      <div class="preview-actions">
+        <button class="primary linebtn" id="sendLineFinal">💬 複製並開啟 LINE</button>
+        <button class="secondary" id="saveOrderOnly">只儲存訂單</button>
+        <button class="danger-btn" id="editOrder">返回修改</button>
+      </div>
+    </div>
+    <div class="confirm-panel" id="confirmPanel">
+      <div class="confirm-icon">✓</div>
+      <h3>訂單已建立</h3>
+      <div class="confirm-id" id="confirmId">-</div>
+      <div style="text-align:center;margin-top:8px"><span class="status-pill">🟡 待店家確認</span></div>
+      <div class="confirm-grid">
+        <div class="confirm-cell"><small>取餐時間</small><strong id="confirmPickup">-</strong></div>
+        <div class="confirm-cell"><small>訂單金額</small><strong id="confirmTotal">-</strong></div>
+      </div>
+      <p class="note" style="text-align:center">訂單已建立；LINE 傳送完成後，請等待店家回覆確認接單。</p>
+      <button class="secondary linebtn" id="confirmLineBtn">💬 複製訂單並開啟 LINE</button>
+      <a class="secondary" style="display:block;text-align:center;text-decoration:none" href="tel:0980603286">☎️ 撥打店家確認</a>
+    </div>
+    <a class="secondary" style="display:block;text-align:center;text-decoration:none" href="tel:0980603286">☎️ 撥打訂購專線</a>
+    <p class="note">這個版本會將購物車與最近訂單保存在目前手機瀏覽器。透過 LINE 送單前，建議確認店家已回覆接單。</p>
+  </div>
+</div>
+
+<button class="floating-help" id="floatingLine" aria-label="LINE">💬</button>
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
