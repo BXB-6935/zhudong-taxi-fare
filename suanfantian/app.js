@@ -2,7 +2,7 @@ const MENU=[{"id":"m1","cat":"點心區","name":"雞蛋豆腐","price":50,"emoji
 const POPULAR_NAMES=['古早味脆皮雞排','無骨鹽酥雞','魷魚頭','甜不辣','雞蛋豆腐'];
 const CATS=['🔥 熱門菜單','全部','點心區','海陸區','田園區'];
 let active='🔥 熱門菜單';
-let cart=JSON.parse(localStorage.getItem('ftsCartV2')||'[]').map(x=>({...x,spicy:x.spicy||'不辣',cut:x.cut||(x.name&&x.name.includes('雞排')?'要切':'')}));
+let cart=JSON.parse(localStorage.getItem('ftsCartV2')||'[]').map(x=>({...x,spicy:x.spicy||'不辣',cut:x.cut||(x.name&&x.name.includes('雞排')?'不切':'')}));
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const money=n=>'NT$ '+Number(n||0).toLocaleString('zh-TW');
@@ -66,7 +66,7 @@ function renderMenu(){
   <button class="add" onclick="add('${x.id}')">＋</button>
  </div>`).join(''):'<div class="empty">找不到符合的餐點</div>'
 }
-window.add=id=>{const m=MENU.find(x=>x.id===id),x=cart.find(x=>x.id===id);if(x)x.qty++;else cart.push({...m,qty:1,spicy:'不辣',cut:m.name.includes('雞排')?'要切':''});saveCart();renderCart();toast('已加入 '+m.name)}
+window.add=id=>{const m=MENU.find(x=>x.id===id),x=cart.find(x=>x.id===id);if(x)x.qty++;else cart.push({...m,qty:1,spicy:'不辣',cut:m.name.includes('雞排')?'不切':''});saveCart();renderCart();toast('已加入 '+m.name)}
 window.qty=(id,d)=>{const x=cart.find(x=>x.id===id);if(!x)return;x.qty+=d;if(x.qty<=0)cart=cart.filter(z=>z.id!==id);saveCart();renderCart()}
 window.setSpicy=(id,v)=>{const x=cart.find(x=>x.id===id);if(!x)return;x.spicy=v;saveCart();renderCart();toast(x.name+' 已改為 '+v)}
 window.setCut=(id,v)=>{const x=cart.find(x=>x.id===id);if(!x)return;x.cut=v;saveCart();renderCart();toast(x.name+' 已改為 '+v)}
@@ -101,7 +101,7 @@ function buildOrder(save=false){
 }
 function textOf(o){
  let s=`【蒜翻天鹽酥雞｜竹東東峰店】\n訂單編號：${o.id}\n姓名：${o.name}\n電話：${o.phone}\n取餐：${o.date} ${o.time}\n胡椒：${o.pepper}\n\n餐點明細：\n`;
- o.items.forEach((x,i)=>s+=`${i+1}. ${x.name} × ${x.qty}｜${x.spicy||'不辣'}${x.name.includes('雞排')?'｜'+(x.cut||'要切'):''}\n`);
+ o.items.forEach((x,i)=>s+=`${i+1}. ${x.name} × ${x.qty}｜${x.spicy||'不辣'}${x.name.includes('雞排')?'｜'+(x.cut||'不切'):''}\n`);
  s+=`\n合計：${money(o.total)}\n備註：${o.note||'無'}`;return s
 }
 function renderHistory(){
@@ -119,7 +119,7 @@ $('#cartSheet').onclick=e=>{if(e.target===$('#cartSheet'))$('#cartSheet').classL
 let pendingPreviewOrder=null,lastCreatedOrder=null;
 function previewOrderText(o){
  const lines=[`姓名：${o.name}`,`電話：${o.phone}`,`取餐：${o.date} ${o.time}`,`胡椒：${o.pepper}`,''];
- o.items.forEach((x,i)=>{let opt=x.spicy||'不辣';if(x.name.includes('雞排'))opt+='／'+(x.cut||'要切');lines.push(`${i+1}. ${x.name} × ${x.qty}｜${opt}｜${money(x.price*x.qty)}`)});
+ o.items.forEach((x,i)=>{let opt=x.spicy||'不辣';if(x.name.includes('雞排'))opt+='／'+(x.cut||'不切');lines.push(`${i+1}. ${x.name} × ${x.qty}｜${opt}｜${money(x.price*x.qty)}`)});
  lines.push('',`合計：${money(o.total)}`);if(o.note)lines.push(`備註：${o.note}`);return lines.join('\n')
 }
 function setProgress(step){$$('.progress-step').forEach((x,i)=>x.classList.toggle('active',i===step-1))}
