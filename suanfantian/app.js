@@ -13,10 +13,10 @@ function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');se
 function pad(n){return String(n).padStart(2,'0')}
 function roundUpMinutes(d,step=10){const x=new Date(d);const m=x.getMinutes();const add=(step-(m%step))%step;x.setMinutes(m+add,0,0);return x}
 function nextPickupBase(){
- let d=new Date();d.setMinutes(d.getMinutes()+20);d=roundUpMinutes(d,10);
+ let d=new Date();d.setMinutes(d.getMinutes()+30);d=roundUpMinutes(d,10);
  const mins=d.getHours()*60+d.getMinutes(),open=15*60,close=23*60+30;
- if(mins<open)d.setHours(15,20,0,0);
- else if(mins>close){d.setDate(d.getDate()+1);d.setHours(15,20,0,0)}
+ if(mins<open)d.setHours(15,30,0,0);
+ else if(mins>close){d.setDate(d.getDate()+1);d.setHours(15,30,0,0)}
  return d
 }
 function setPickupDateTime(d){
@@ -29,7 +29,7 @@ function renderQuickTimes(){
  const opts=[0,20,40,60].map(add=>{const d=new Date(base);d.setMinutes(d.getMinutes()+add);return d.getHours()*60+d.getMinutes()>23*60+30?null:d}).filter(Boolean);
  wrap.innerHTML=opts.map((d,i)=>`<button type="button" class="quick-time ${i===0?'active':''}" data-date="${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}" data-time="${pad(d.getHours())}:${pad(d.getMinutes())}">${i===0?'最快 ':''}${pad(d.getHours())}:${pad(d.getMinutes())}</button>`).join('');
  $$('.quick-time').forEach(b=>b.onclick=()=>{$('#date').value=b.dataset.date;$('#time').value=b.dataset.time;$$('.quick-time').forEach(x=>x.classList.toggle('active',x===b))});
- $('#prepHint').textContent='最快約 '+pad(base.getHours())+':'+pad(base.getMinutes())+' 可取餐（預留約 20 分鐘製作時間）'
+ $('#prepHint').textContent='最快約 '+pad(base.getHours())+':'+pad(base.getMinutes())+' 可取餐（最少預留 30 分鐘製作時間）'
 }
 function rememberCustomer(){localStorage.setItem('ftsCustomerV1',JSON.stringify({name:$('#name').value.trim(),phone:$('#phone').value.trim()}))}
 function restoreCustomer(){try{const c=JSON.parse(localStorage.getItem('ftsCustomerV1')||'{}');if(c.name)$('#name').value=c.name;if(c.phone)$('#phone').value=c.phone}catch(e){}}
