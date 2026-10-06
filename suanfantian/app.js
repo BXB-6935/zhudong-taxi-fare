@@ -101,7 +101,7 @@ function buildOrder(save=false){
 }
 function textOf(o){
  let s=`【蒜翻天鹽酥雞｜竹東東峰店】\n訂單編號：${o.id}\n姓名：${o.name}\n電話：${o.phone}\n取餐：${o.date} ${o.time}\n胡椒：${o.pepper}\n\n餐點明細：\n`;
- o.items.forEach((x,i)=>s+=`${i+1}. ${x.name} × ${x.qty}｜${x.spicy||'不辣'}${x.name.includes('雞排')?'｜'+(x.cut||'要切'):''}｜${money(x.price*x.qty)}\n`);
+ o.items.forEach((x,i)=>s+=`${i+1}. ${x.name} × ${x.qty}｜${x.spicy||'不辣'}${x.name.includes('雞排')?'｜'+(x.cut||'要切'):''}\n`);
  s+=`\n合計：${money(o.total)}\n備註：${o.note||'無'}`;return s
 }
 function renderHistory(){
