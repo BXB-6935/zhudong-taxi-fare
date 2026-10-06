@@ -32,6 +32,17 @@ function renderQuickTimes(){
 }
 function rememberCustomer(){localStorage.setItem('ftsCustomerV1',JSON.stringify({name:$('#name').value.trim(),phone:$('#phone').value.trim()}))}
 function restoreCustomer(){try{const c=JSON.parse(localStorage.getItem('ftsCustomerV1')||'{}');if(c.name)$('#name').value=c.name;if(c.phone)$('#phone').value=c.phone}catch(e){}}
+function clearOrderForm(){
+ localStorage.removeItem('ftsCustomerV1');
+ $('#name').value='';
+ $('#phone').value='';
+ $('#phone').classList.remove('phone-ok','phone-bad');
+ $('#pepper').value='正常';
+ $('#note').value='';
+ setPickupDateTime(nextPickupBase());
+ renderQuickTimes();
+ pendingPreviewOrder=null;
+}
 function status(){
  const d=new Date(),mins=d.getHours()*60+d.getMinutes(),open=15*60,close=23*60+30,s=$('#openStatus');
  if(mins>=open&&mins<=close){s.textContent='● 營業中・可預訂';s.style.color='#12864e'}
@@ -116,7 +127,7 @@ window.reorderHistory=idx=>{const h=JSON.parse(localStorage.getItem('ftsOrdersV2
 $('#previewOrder').onclick=()=>{const o=buildOrder(false);if(!o)return;pendingPreviewOrder=o;$('#previewText').textContent=previewOrderText(o);$('#previewBox').classList.add('show');setProgress(2);$('#previewBox').scrollIntoView({behavior:'smooth',block:'nearest'})};
 $('#editOrder').onclick=()=>{$('#previewBox').classList.remove('show');setProgress(1)};
 $('#saveOrderOnly').onclick=()=>{if(!pendingPreviewOrder)return;const h=JSON.parse(localStorage.getItem('ftsOrdersV2')||'[]');h.unshift(pendingPreviewOrder);localStorage.setItem('ftsOrdersV2',JSON.stringify(h.slice(0,20)));renderHistory();showConfirmation(pendingPreviewOrder);cart=[];saveCart();renderCart();$('#previewBox').classList.remove('show');toast('訂單已儲存')};
-$('#sendLineFinal').onclick=async()=>{if(!pendingPreviewOrder)return;const h=JSON.parse(localStorage.getItem('ftsOrdersV2')||'[]');h.unshift(pendingPreviewOrder);localStorage.setItem('ftsOrdersV2',JSON.stringify(h.slice(0,20)));renderHistory();try{await navigator.clipboard.writeText(textOf(pendingPreviewOrder))}catch(e){}showConfirmation(pendingPreviewOrder);cart=[];saveCart();renderCart();$('#previewBox').classList.remove('show');setProgress(3);window.open('https://line.me/R/ti/p/@664awlma','_blank');toast('訂單已複製，請貼到 LINE')};
+$('#sendLineFinal').onclick=async()=>{if(!pendingPreviewOrder)return;const orderToSend=pendingPreviewOrder;const h=JSON.parse(localStorage.getItem('ftsOrdersV2')||'[]');h.unshift(orderToSend);localStorage.setItem('ftsOrdersV2',JSON.stringify(h.slice(0,20)));renderHistory();try{await navigator.clipboard.writeText(textOf(orderToSend))}catch(e){}showConfirmation(orderToSend);cart=[];saveCart();renderCart();$('#previewBox').classList.remove('show');clearOrderForm();setProgress(3);window.open('https://line.me/R/ti/p/@664awlma','_blank');toast('訂單已送出，訂購資料已清除')};
 $('#floatingLine').onclick=()=>window.open('https://line.me/R/ti/p/@664awlma','_blank');
 $('#clearHistory').onclick=()=>{if(confirm('確定清除最近訂單？')){localStorage.removeItem('ftsOrdersV2');renderHistory()}};
 setPickupDateTime(nextPickupBase());restoreCustomer();renderQuickTimes();status();setInterval(status,60000);renderCats();renderMenu();renderCart();renderHistory();
