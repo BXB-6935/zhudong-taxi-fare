@@ -39,6 +39,7 @@ function clearOrderForm(){
  $('#phone').value='';
  $('#phone').classList.remove('phone-ok','phone-bad');
  $('#pepper').value='正常';
+ $('#garlic').value='不要蒜頭';
  $('#note').value='';
  setPickupDateTime(nextPickupBase());
  renderQuickTimes();
@@ -95,12 +96,12 @@ function validate(){
 }
 function buildOrder(save=false){
  if(!validate())return null;
- const o={id:orderId(),createdAt:new Date().toISOString(),name:$('#name').value.trim(),phone:$('#phone').value.trim(),date:$('#date').value,time:$('#time').value,pepper:$('#pepper').value,note:$('#note').value.trim(),items:cart.map(x=>({...x})),total:cartTotal()};
+ const o={id:orderId(),createdAt:new Date().toISOString(),name:$('#name').value.trim(),phone:$('#phone').value.trim(),date:$('#date').value,time:$('#time').value,pepper:$('#pepper').value,garlic:$('#garlic').value,note:$('#note').value.trim(),items:cart.map(x=>({...x})),total:cartTotal()};
  if(save){const h=JSON.parse(localStorage.getItem('ftsOrdersV2')||'[]');h.unshift(o);localStorage.setItem('ftsOrdersV2',JSON.stringify(h.slice(0,20)));renderHistory()}
  return o
 }
 function textOf(o){
- let s=`【蒜翻天鹽酥雞｜竹東東峰店】\n訂單編號：${o.id}\n姓名：${o.name}\n電話：${o.phone}\n取餐：${o.date} ${o.time}\n胡椒：${o.pepper}\n\n餐點明細：\n`;
+ let s=`【蒜翻天鹽酥雞｜竹東東峰店】\n訂單編號：${o.id}\n姓名：${o.name}\n電話：${o.phone}\n取餐：${o.date} ${o.time}\n胡椒：${o.pepper}\n蒜頭：${o.garlic||'不要蒜頭'}\n\n餐點明細：\n`;
  o.items.forEach((x,i)=>s+=`${i+1}. ${x.name} × ${x.qty}｜${x.spicy||'不辣'}${x.name.includes('雞排')?'｜'+(x.cut||'不切'):''}\n`);
  s+=`\n合計：${money(o.total)}\n備註：${o.note||'無'}`;return s
 }
@@ -118,7 +119,7 @@ $('#clearCart').onclick=()=>{if(!cart.length){toast('購物車目前是空的');
 $('#cartSheet').onclick=e=>{if(e.target===$('#cartSheet'))$('#cartSheet').classList.remove('show')};
 let pendingPreviewOrder=null,lastCreatedOrder=null;
 function previewOrderText(o){
- const lines=[`姓名：${o.name}`,`電話：${o.phone}`,`取餐：${o.date} ${o.time}`,`胡椒：${o.pepper}`,''];
+ const lines=[`姓名：${o.name}`,`電話：${o.phone}`,`取餐：${o.date} ${o.time}`,`胡椒：${o.pepper}`,`蒜頭：${o.garlic||'不要蒜頭'}`,''];
  o.items.forEach((x,i)=>{let opt=x.spicy||'不辣';if(x.name.includes('雞排'))opt+='／'+(x.cut||'不切');lines.push(`${i+1}. ${x.name} × ${x.qty}｜${opt}｜${money(x.price*x.qty)}`)});
  lines.push('',`合計：${money(o.total)}`);if(o.note)lines.push(`備註：${o.note}`);return lines.join('\n')
 }
