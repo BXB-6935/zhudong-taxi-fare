@@ -114,6 +114,7 @@ $('#phone').addEventListener('blur',rememberCustomer);
 $('#phone').addEventListener('input',()=>{const v=$('#phone').value.trim().replace(/\s|-/g,'');$('#phone').classList.remove('phone-ok','phone-bad');if(v)$('#phone').classList.add(/^09\d{8}$/.test(v)?'phone-ok':'phone-bad')});
 $('#openCart').onclick=()=>$('#cartSheet').classList.add('show');
 $('#closeCart').onclick=()=>$('#cartSheet').classList.remove('show');
+$('#clearCart').onclick=()=>{if(!cart.length){toast('購物車目前是空的');return;}if(confirm('確定要清空購物車嗎？')){cart=[];saveCart();renderCart();$('#previewBox').classList.remove('show');pendingPreviewOrder=null;setProgress(1);toast('購物車已清空')}};
 $('#cartSheet').onclick=e=>{if(e.target===$('#cartSheet'))$('#cartSheet').classList.remove('show')};
 let pendingPreviewOrder=null,lastCreatedOrder=null;
 function previewOrderText(o){
