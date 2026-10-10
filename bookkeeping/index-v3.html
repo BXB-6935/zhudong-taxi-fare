@@ -13,13 +13,13 @@
     <div class="brand">
       <div class="logo">▥</div>
       <div>
-        <h1>記帳儀表板</h1>
+        <h1>曾建民記帳儀表板</h1>
         <small>掌握營收・工時與里程</small>
       </div>
     </div>
     <div class="user-chip">
       <div class="avatar">👤</div>
-      <span>使用者</span><span style="font-size:10px;color:#bcd6ff">● 自動記憶</span>
+      <span>曾建民</span><span style="font-size:10px;color:#bcd6ff">● 自動記憶</span>
     </div>
   </div>
 </header>
@@ -158,10 +158,7 @@
         <div class="field"><label>付款方式</label>
           <select id="fPayment">
             <option value="現金">現金</option>
-            <option value="信用卡">信用卡</option>
-            <option value="LINE Pay">LINE Pay</option>
-            <option value="街口">街口</option>
-            <option value="其他">其他</option>
+            <option value="記帳">記帳</option>
           </select>
         </div>
         <div class="field"><label>上車地點</label><input type="text" id="fPickup" placeholder="可不填"></div>
@@ -530,9 +527,9 @@ function seedData(){
   const today=new Date(), sessions=[], rows=[];
   const sampleTrips=[
     [260,'現金','竹東火車站','竹北'],
-    [320,'信用卡','竹北','高鐵新竹站'],
+    [320,'記帳','竹北','高鐵新竹站'],
     [180,'現金','新竹市區','竹東'],
-    [420,'LINE Pay','竹東','關西'],
+    [420,'現金','竹東','關西'],
     [250,'現金','竹東','芎林']
   ];
   for(let d=0;d<7;d++){
