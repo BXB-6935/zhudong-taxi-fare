@@ -147,6 +147,7 @@
 
     <div class="card">
       <div class="section-title"><span>✍️ 每筆營收明細</span></div>
+      <form id="detailEntryForm" onsubmit="return safeSaveRecord(event)" novalidate>
       <input type="hidden" id="editId">
       <div class="form-grid">
         <div class="field full">
@@ -168,8 +169,10 @@
         <div class="field"><label>下車地點</label><input type="text" id="fDropoff" placeholder="可不填"></div>
         <div class="field full"><label>備註</label><input type="text" id="fNote" placeholder="可不填"></div>
       </div>
-      <button type="button" class="primary-btn" id="saveRecord" onclick="safeSaveRecord(event)">儲存紀錄</button>
-      <button class="secondary-btn" id="cancelEdit" style="margin-top:8px">清除表單</button>
+      <button type="submit" class="primary-btn" id="saveRecord">儲存紀錄</button>
+      <div id="detailSaveStatus" class="summary-note" style="text-align:center;min-height:18px;margin-top:8px"></div>
+      <button type="button" class="secondary-btn" id="cancelEdit" style="margin-top:8px">清除表單</button>
+      </form>
     </div>
 
     <div class="card">
@@ -296,6 +299,8 @@ function safeSelectRecordDate(date){
   }
 }
 function safeSaveRecord(event){
+  const status=document.getElementById('detailSaveStatus');
+  if(status){status.textContent='正在儲存…';status.style.color='#1677ff';}
   if(event){
     try{event.preventDefault();event.stopImmediatePropagation();}catch(e){}
   }
@@ -303,6 +308,7 @@ function safeSaveRecord(event){
     const revenueEl=document.getElementById('fRevenue');
     const revenue=Number(revenueEl?.value);
     if(!Number.isFinite(revenue) || revenueEl?.value===''){
+      if(status){status.textContent='請輸入本筆營收金額';status.style.color='#d94646';}
       alert('請輸入本筆營收金額。');
       revenueEl?.focus();
       return false;
@@ -369,8 +375,10 @@ function safeSaveRecord(event){
     }catch(e){}
 
     if(typeof safeRenderRecordDay==='function') safeRenderRecordDay(date);
+    if(status){status.textContent='✓ 已儲存 '+date.replaceAll('-','/');status.style.color='#0d9d63';}
     return false;
   }catch(err){
+    if(status){status.textContent='儲存失敗：'+(err?.message||'未知錯誤');status.style.color='#d94646';}
     alert('儲存失敗，請再試一次');
     console.error(err);
     return false;
@@ -1036,16 +1044,6 @@ restoreAppState();
 syncBusinessDayUI();
 renderAll();
 renderPunch();
-</script>
-
-<script data-detail-save-guard>
-document.addEventListener('click',function(e){
-  const btn=e.target && e.target.closest ? e.target.closest('#saveRecord') : null;
-  if(!btn) return;
-  e.preventDefault();
-  e.stopPropagation();
-  if(typeof safeSaveRecord==='function') safeSaveRecord(e);
-},true);
 </script>
 
 </body>
