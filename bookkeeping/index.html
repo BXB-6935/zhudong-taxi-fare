@@ -502,7 +502,7 @@ function syncBusinessDayUI(){
   const y=new Date();y.setDate(y.getDate()-1);
   const by=new Date();by.setDate(by.getDate()-2);
   const map={today,yesterday:toISO(y),beforeYesterday:toISO(by)};
-  $('#recordDateQuick [data-record-day]').forEach(b=>{
+  $$('#recordDateQuick [data-record-day]').forEach(b=>{
     const val=map[b.dataset.recordDay];
     b.classList.toggle('active',val===viewDate);
     b.disabled=false;
@@ -572,7 +572,7 @@ function setRange(type){
   const [s,e]=getRangePreset(type);
   currentStart=s;currentEnd=e;
   $('#startDate').value=s;$('#endDate').value=e;
-  $('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range===type));
+  $$('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range===type));
   saveAppState({quickRange:type,startDate:s,endDate:e});
   renderHome();
 }
