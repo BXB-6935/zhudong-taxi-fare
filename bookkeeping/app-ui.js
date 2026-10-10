@@ -142,7 +142,9 @@ function renderHome(){
   renderCompare();renderDetail(daily);
 }
 function renderAllRecords(){
-  const rows=loadRecords().sort((a,b)=>(b.date+String(b.sequence||0).padStart(4,'0')).localeCompare(a.date+String(a.sequence||0).padStart(4,'0')));
+  const day=selectedBusinessDate();
+  const rows=loadRecords().filter(r=>r.date===day).sort((a,b)=>(b.date+String(b.sequence||0).padStart(4,'0')).localeCompare(a.date+String(a.sequence||0).padStart(4,'0')));
+  if($('#recordListTitle')) $('#recordListTitle').textContent='🧾 '+fmtDate(day)+' 明細';
   const seqMap={};
   rows.slice().reverse().forEach(r=>{seqMap[r.date]=(seqMap[r.date]||0)+1;r._displaySeq=seqMap[r.date]});
   $('#allBody').innerHTML=rows.length?rows.map(r=>`<tr>
@@ -183,9 +185,10 @@ function renderAll(){renderHome();renderAllRecords();renderStats();renderCar()}
 
 function clearForm(restoreSavedDraft=false){
   const s=activeSession();
+  const day=s?s.date:selectedBusinessDate();
   $('#editId').value='';
-  $('#fDate').value=s?s.date:'';
-  $('#fDateDisplay').value=s?fmtDate(s.date):'尚未上線';
+  $('#fDate').value=day;
+  $('#fDateDisplay').value=fmtDate(day);
   const d=restoreSavedDraft?loadDraft():{};
   $('#fRevenue').value=d.revenue||'';
   $('#fPayment').value=d.payment||'現金';
