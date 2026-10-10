@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0f2f5f" />
+<title>黃耘浩｜記帳儀表板</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+  <div class="header-row">
+    <div class="brand">
+      <div class="logo">▥</div>
+      <div>
+        <h1>黃耘浩記帳儀表板</h1>
+        <small>掌握營收・工時與里程</small>
+      </div>
+    </div>
+    <div class="user-chip">
+      <div class="avatar">👤</div>
+      <span>黃耘浩</span><span style="font-size:10px;color:#bcd6ff">● 自動記憶</span>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section id="view-home" class="view active">
+    <div class="card">
+      <div class="section-title"><span>📅 快速選擇</span></div>
+      <div class="quick-grid" id="quickGrid">
+        <button class="quick-btn" data-range="today">今天</button>
+        <button class="quick-btn" data-range="yesterday">昨天</button>
+        <button class="quick-btn" data-range="3d">最近 3 天</button>
+        <button class="quick-btn active" data-range="7d">最近 7 天</button>
+        <button class="quick-btn" data-range="thisWeek">本週</button>
+        <button class="quick-btn" data-range="lastWeek">上週</button>
+        <button class="quick-btn" data-range="thisMonth">本月</button>
+        <button class="quick-btn" data-range="lastMonth">上月</button>
+      </div>
+      <div class="date-row">
+        <div class="field"><label>開始日期</label><input type="date" id="startDate"></div>
+        <div class="field"><label>結束日期</label><input type="date" id="endDate"></div>
+      </div>
+      <button class="apply-btn" id="applyDate">套用</button>
+    </div>
+
+    <div class="kpi-grid" id="kpiGrid"></div>
+
+    <div class="card">
+      <div class="compare-top">
+        <div class="section-title" style="margin:0"><span>⚖️ 區間比較</span></div>
+        <select id="compareMode" class="compare-select">
+          <option value="prev">本區間 vs 前一區間</option>
+          <option value="week">本週 vs 上週</option>
+          <option value="month">本月 vs 上月</option>
+        </select>
+      </div>
+      <div class="compare-panels">
+        <div class="compare-box"><b id="cmpLeftLabel">本區間</b><span id="cmpLeftRange" class="summary-note"></span><strong id="cmpLeftValue">NT$ 0</strong></div>
+        <div class="compare-box"><b id="cmpRightLabel">前一區間</b><span id="cmpRightRange" class="summary-note"></span><strong id="cmpRightValue">NT$ 0</strong></div>
+      </div>
+      <div class="compare-list" id="compareList"></div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="section-title"><span>📊 每日營收趨勢</span><small>NT$</small></div>
+      <div id="revenueChart"></div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="section-title"><span>📈 每日單數</span><small>單數</small></div>
+      <div id="ordersChart"></div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="section-title"><span>🚗 工時與里程</span></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#1677ff"></i>工時（小時）</span>
+        <span><i class="dot" style="background:#18b97a"></i>里程（公里）</span>
+      </div>
+      <div id="hoursMileageChart"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span>↗️ 重點指標比較</span></div>
+      <div class="mini-compare" id="miniCompare"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span>📄 每日明細</span><button id="exportBtn" class="secondary-btn" style="width:auto;padding:7px 10px;margin:0">匯出 CSV</button></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th><th>進卡</th><th>出卡</th><th>營收</th><th>工時</th><th>單數</th><th>里程</th><th>平均客單</th><th>時薪</th>
+            </tr>
+          </thead>
+          <tbody id="detailBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-record" class="view">
+    <div class="card">
+      <div class="section-title"><span>📅 記帳營業日</span><span id="businessDayBadge" style="font-size:12px;color:#64748b">V2・未選擇</span></div>
+      <div class="quick-grid" id="recordDateQuick">
+        <a href="#record-day-today" role="button" class="quick-btn" data-record-day="today" onclick="safeSelectRecordDay(0);return false;" style="text-decoration:none;text-align:center;display:block">今天</a>
+        <a href="#record-day-yesterday" role="button" class="quick-btn" data-record-day="yesterday" onclick="safeSelectRecordDay(-1);return false;" style="text-decoration:none;text-align:center;display:block">昨天</a>
+        <a href="#record-day-before-yesterday" role="button" class="quick-btn" data-record-day="beforeYesterday" onclick="safeSelectRecordDay(-2);return false;" style="text-decoration:none;text-align:center;display:block">前天</a>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>日曆快選</label>
+        <input type="date" id="recordDatePicker" onchange="safeSelectRecordDate(this.value)">
+      </div>
+      <p class="summary-note" id="businessDayHint">跨過凌晨 00:00 不會自動換日；上線期間固定以進卡當天作為營業日。</p>
+    </div>
+
+    <div class="card" id="punchCard">
+      <div class="section-title"><span>🟢 上下線進出卡</span><span id="onlineBadge" style="font-size:12px;padding:6px 9px;border-radius:999px;background:#eef2f7;color:#64748b">尚未上線</span></div>
+
+      <div id="offlinePunch">
+        <div class="field">
+          <label>上線進卡公里數（必填）</label>
+          <input type="number" id="startOdo" min="0" step="0.1" inputmode="decimal" placeholder="例如 125430.5">
+        </div>
+        <button class="primary-btn" id="punchInBtn">上線進卡</button>
+        <p class="summary-note">進卡時間會自動記錄目前時間；未完成上線進卡前，無法新增每筆營收明細。</p>
+      </div>
+
+      <div id="onlinePunch" style="display:none">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <div class="compare-box"><b>進卡時間</b><strong id="activeStartTime" style="font-size:17px">-</strong></div>
+          <div class="compare-box"><b>起始公里</b><strong id="activeStartOdo" style="font-size:17px">-</strong></div>
+        </div>
+        <div class="field">
+          <label>下線出卡公里數（必填）</label>
+          <input type="number" id="endOdo" min="0" step="0.1" inputmode="decimal" placeholder="必須大於或等於進卡公里數">
+        </div>
+        <button class="primary-btn" id="punchOutBtn" style="background:#ef5a5a">下線出卡</button>
+        <p class="summary-note">出卡時間會自動記錄目前時間，系統自動計算本次上線工時與行駛公里數。</p>
+      </div>
+
+      <div id="todayPunchSummary" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span>✍️ 每筆營收明細</span></div>
+      <input type="hidden" id="editId">
+      <div class="form-grid">
+        <div class="field full">
+          <label>記帳日期</label>
+          <input type="text" id="fDateDisplay" disabled placeholder="完成上線進卡後自動帶入">
+          <input type="hidden" id="fDate">
+        </div>
+        <div class="field"><label>本筆營收（NT$）</label><input type="number" id="fRevenue" min="0" step="1" inputmode="numeric" placeholder="例如 280"></div>
+        <div class="field"><label>付款方式</label>
+          <select id="fPayment">
+            <option value="現金">現金</option>
+            <option value="信用卡">信用卡</option>
+            <option value="LINE Pay">LINE Pay</option>
+            <option value="街口">街口</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+        <div class="field"><label>上車地點</label><input type="text" id="fPickup" placeholder="可不填"></div>
+        <div class="field"><label>下車地點</label><input type="text" id="fDropoff" placeholder="可不填"></div>
+        <div class="field full"><label>備註</label><input type="text" id="fNote" placeholder="可不填"></div>
+      </div>
+      <button class="primary-btn" id="saveRecord">儲存紀錄</button>
+      <button class="secondary-btn" id="cancelEdit" style="margin-top:8px">清除表單</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span id="recordListTitle">🧾 當日紀錄</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>日期</th><th>序號</th><th>上車</th><th>下車</th><th>營收</th><th>付款</th><th>備註</th><th>操作</th></tr></thead>
+          <tbody id="allBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-stats" class="view">
+    <div class="card">
+      <div class="section-title"><span>📊 統計總覽</span></div>
+      <div id="statsSummary"></div>
+    </div>
+    <div class="card chart-card"><div class="section-title"><span>每月營收</span></div><div id="monthlyChart"></div></div>
+  </section>
+
+  <section id="view-car" class="view">
+    <div class="card">
+      <div class="section-title"><span>🚘 車輛資料</span></div>
+      <div class="form-grid">
+        <div class="field full"><label>車牌</label><input id="carPlate" type="text" placeholder="例如 ABC-1234"></div>
+        <div class="field"><label>車型</label><input id="carModel" type="text" placeholder="例如 Corolla Cross"></div>
+        <div class="field"><label>目前里程</label><input id="carOdo" type="number" min="0" placeholder="公里"></div>
+      </div>
+      <button class="primary-btn" id="saveCar">儲存車輛資料</button>
+      <div id="carInfo" class="summary-note"></div>
+    </div>
+  </section>
+
+  <section id="view-settings" class="view">
+    <div class="card">
+      <div class="section-title"><span>⚙️ 設定</span></div>
+      <button class="secondary-btn" id="seedBtn">載入示範資料</button>
+      <button class="secondary-btn" id="sessionCsvBtn" style="margin-top:8px">匯出進出卡紀錄 CSV</button>
+      <button class="secondary-btn" id="backupBtn" style="margin-top:8px">匯出備份 JSON</button>
+      <label class="secondary-btn" style="display:block;text-align:center;margin-top:8px;cursor:pointer">
+        匯入備份 JSON
+        <input type="file" id="restoreInput" accept=".json,application/json" hidden>
+      </label>
+      <button class="secondary-btn" id="clearBtn" style="margin-top:8px;color:#d84b4b">清除所有資料</button>
+      <p class="summary-note">資料儲存在此瀏覽器的 LocalStorage。若更換手機或清除瀏覽器資料，請先匯出備份。</p>
+    </div>
+  </section>
+</main>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-view="home" onclick="safeSwitchView('home')"><span class="nicon">🏠</span><span>首頁</span></button>
+  <button class="nav-btn" data-view="record" onclick="safeSwitchView('record')"><span class="nicon">🧾</span><span>記錄</span></button>
+  <button class="nav-btn" data-view="stats" onclick="safeSwitchView('stats')"><span class="nicon">📊</span><span>統計</span></button>
+  <button class="nav-btn" data-view="car" onclick="safeSwitchView('car')"><span class="nicon">🚗</span><span>車輛</span></button>
+  <button class="nav-btn" data-view="settings" onclick="safeSwitchView('settings')"><span class="nicon">⚙️</span><span>設定</span></button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function safeISODate(d){
+  const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+function safeSelectRecordDay(offset){
+  const d=new Date();
+  d.setHours(12,0,0,0);
+  d.setDate(d.getDate()+offset);
+  safeSelectRecordDate(safeISODate(d));
+}
+function safeEsc(v){
+  return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function safeRenderRecordDay(date){
+  try{
+    const raw=localStorage.getItem('hyhBookkeepingRecordsV1');
+    const rows=(raw?JSON.parse(raw):[]).filter(r=>r.date===date)
+      .sort((a,b)=>(Number(b.sequence||0)-Number(a.sequence||0)));
+    const title=document.getElementById('recordListTitle');
+    if(title) title.textContent='🧾 '+date.replaceAll('-','/')+' 明細';
+    const body=document.getElementById('allBody');
+    if(body){
+      body.innerHTML=rows.length?rows.map(r=>'<tr>'+
+        '<td>'+safeEsc((r.date||'').replaceAll('-','/'))+'</td>'+
+        '<td>#'+safeEsc(r.sequence||1)+'</td>'+
+        '<td>'+safeEsc(r.pickup||'-')+'</td>'+
+        '<td>'+safeEsc(r.dropoff||'-')+'</td>'+
+        '<td>NT$ '+Number(r.revenue||0).toLocaleString('zh-TW')+'</td>'+
+        '<td>'+safeEsc(r.payment||'-')+'</td>'+
+        '<td>'+safeEsc(r.note||'-')+'</td>'+
+        '<td class="action-cell"></td></tr>').join('')
+        :'<tr><td colspan="8" class="empty">此日期尚無紀錄</td></tr>';
+    }
+  }catch(e){ console.error('safeRenderRecordDay',e); }
+}
+function safeSelectRecordDate(date){
+  if(!date) return;
+  try{
+    const raw=localStorage.getItem('hyhBookkeepingAppStateV1');
+    const state=raw?JSON.parse(raw):{};
+    state.recordDate=date;
+    state.lastSavedAt=new Date().toISOString();
+    localStorage.setItem('hyhBookkeepingAppStateV1',JSON.stringify(state));
+  }catch(e){}
+  const picker=document.getElementById('recordDatePicker');
+  if(picker){ picker.disabled=false; picker.value=date; }
+  const today=new Date(); today.setHours(12,0,0,0);
+  const map={};
+  map.today=safeISODate(today);
+  const y=new Date(today); y.setDate(y.getDate()-1); map.yesterday=safeISODate(y);
+  const b=new Date(today); b.setDate(b.getDate()-2); map.beforeYesterday=safeISODate(b);
+  document.querySelectorAll('#recordDateQuick [data-record-day]').forEach(btn=>{
+    btn.disabled=false;
+    btn.classList.toggle('active',map[btn.dataset.recordDay]===date);
+  });
+  try{
+    if(typeof setSelectedBusinessDate==='function') setSelectedBusinessDate(date);
+    if(typeof syncBusinessDayUI==='function') syncBusinessDayUI();
+    if(typeof renderAllRecords==='function') renderAllRecords(); else safeRenderRecordDay(date);
+    if(typeof renderPunch==='function') renderPunch();
+  }catch(e){
+    safeRenderRecordDay(date);
+  }
+}
+function safeSwitchView(name){
+  try{
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const target=document.getElementById('view-'+name);
+    if(target) target.classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+    try{
+      const raw=localStorage.getItem('hyhBookkeepingAppStateV1');
+      const state=raw?JSON.parse(raw):{};
+      state.activeView=name;
+      state.lastSavedAt=new Date().toISOString();
+      localStorage.setItem('hyhBookkeepingAppStateV1',JSON.stringify(state));
+    }catch(e){}
+    if(name==='home' && typeof renderHome==='function') renderHome();
+    if(name==='record'){
+      if(typeof syncBusinessDayUI==='function') syncBusinessDayUI();
+      if(typeof renderAllRecords==='function') renderAllRecords();
+      if(typeof renderPunch==='function') renderPunch();
+    }
+    if(name==='stats' && typeof renderStats==='function') renderStats();
+    if(name==='car' && typeof renderCar==='function') renderCar();
+  }catch(e){
+    console.error('safeSwitchView',e);
+  }
+}
+</script>
+<script src="app-core-huangyunhao.js"></script>
+<script src="app-ui-huangyunhao.js"></script>
+<script src="app-init-huangyunhao.js"></script>
+<script>
+(function(){
+  function forceRecordLinks(){
+    document.querySelectorAll('#recordDateQuick [data-record-day]').forEach(function(el){
+      try{ el.disabled=false; el.removeAttribute('disabled'); el.style.pointerEvents='auto'; el.style.touchAction='manipulation'; }catch(e){}
+    });
+    var p=document.getElementById('recordDatePicker');
+    if(p){ p.disabled=false; p.removeAttribute('disabled'); p.style.pointerEvents='auto'; }
+  }
+  document.addEventListener('DOMContentLoaded',forceRecordLinks);
+  window.addEventListener('pageshow',forceRecordLinks);
+  setTimeout(forceRecordLinks,300);
+  setTimeout(forceRecordLinks,1200);
+})();
+</script>
+</body>
+</html>
