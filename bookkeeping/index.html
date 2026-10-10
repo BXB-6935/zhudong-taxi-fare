@@ -103,6 +103,20 @@
   </section>
 
   <section id="view-record" class="view">
+    <div class="card">
+      <div class="section-title"><span>📅 記帳營業日</span><span id="businessDayBadge" style="font-size:12px;color:#64748b">未選擇</span></div>
+      <div class="quick-grid" id="recordDateQuick">
+        <button class="quick-btn" data-record-day="today">今天</button>
+        <button class="quick-btn" data-record-day="yesterday">昨天</button>
+        <button class="quick-btn" data-record-day="beforeYesterday">前天</button>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>日曆快選</label>
+        <input type="date" id="recordDatePicker">
+      </div>
+      <p class="summary-note" id="businessDayHint">跨過凌晨 00:00 不會自動換日；上線期間固定以進卡當天作為營業日。</p>
+    </div>
+
     <div class="card" id="punchCard">
       <div class="section-title"><span>🟢 上下線進出卡</span><span id="onlineBadge" style="font-size:12px;padding:6px 9px;border-radius:999px;background:#eef2f7;color:#64748b">尚未上線</span></div>
 
@@ -159,7 +173,7 @@
     </div>
 
     <div class="card">
-      <div class="section-title"><span>🧾 全部紀錄</span></div>
+      <div class="section-title"><span id="recordListTitle">🧾 當日紀錄</span></div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>日期</th><th>序號</th><th>上車</th><th>下車</th><th>營收</th><th>付款</th><th>備註</th><th>操作</th></tr></thead>
@@ -216,8 +230,8 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app-core.js"></script>
-<script src="app-ui.js"></script>
-<script src="app-init.js"></script>
+<script src="app-core.js?v=20261010-1638"></script>
+<script src="app-ui.js?v=20261010-1638"></script>
+<script src="app-init.js?v=20261010-1638"></script>
 </body>
 </html>
