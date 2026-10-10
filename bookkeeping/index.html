@@ -425,7 +425,7 @@ const APP_STATE_KEY='mobileBookkeepingAppStateV1';
 const DRAFT_KEY='mobileBookkeepingDraftV1';
 
 const $ = s => document.querySelector(s);
-const $ = s => [...document.querySelectorAll(s)];
+const $$ = s => [...document.querySelectorAll(s)];
 
 function pad(n){return String(n).padStart(2,'0')}
 function toISO(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
