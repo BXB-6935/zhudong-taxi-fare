@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#0f2f5f" />
-<title>曾建民｜記帳儀表板 V3</title>
+<title>曾建民｜記帳儀表板</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -104,7 +104,7 @@
 
   <section id="view-record" class="view">
     <div class="card">
-      <div class="section-title"><span>📅 記帳營業日</span><span id="businessDayBadge" style="font-size:12px;color:#64748b">V3・未選擇</span></div>
+      <div class="section-title"><span>📅 記帳營業日</span><span id="businessDayBadge" style="font-size:12px;color:#64748b">未選擇</span></div>
       <div class="quick-grid" id="recordDateQuick">
         <a href="#record-day-today" role="button" class="quick-btn" data-record-day="today" onclick="safeSelectRecordDay(0);return false;" style="text-decoration:none;text-align:center;display:block">今天</a>
         <a href="#record-day-yesterday" role="button" class="quick-btn" data-record-day="yesterday" onclick="safeSelectRecordDay(-1);return false;" style="text-decoration:none;text-align:center;display:block">昨天</a>
@@ -147,6 +147,7 @@
 
     <div class="card">
       <div class="section-title"><span>✍️ 每筆營收明細</span></div>
+      <form id="detailEntryForm" onsubmit="return safeSaveRecord(event)" novalidate>
       <input type="hidden" id="editId">
       <div class="form-grid">
         <div class="field full">
@@ -160,13 +161,16 @@
             <option value="現金">現金</option>
             <option value="記帳">記帳</option>
           </select>
+          <small style="display:block;margin-top:5px;color:#94a3b8">付款別：現金／記帳</small>
         </div>
         <div class="field"><label>上車地點</label><input type="text" id="fPickup" placeholder="可不填"></div>
         <div class="field"><label>下車地點</label><input type="text" id="fDropoff" placeholder="可不填"></div>
         <div class="field full"><label>備註</label><input type="text" id="fNote" placeholder="可不填"></div>
       </div>
-      <button type="button" class="primary-btn" id="saveRecord" onclick="safeSaveRecord(event)">儲存紀錄</button>
-      <button class="secondary-btn" id="cancelEdit" style="margin-top:8px">清除表單</button>
+      <button type="submit" class="primary-btn" id="saveRecord">儲存紀錄</button>
+      <div id="detailSaveStatus" class="summary-note" style="text-align:center;min-height:18px;margin-top:8px"></div>
+      <button type="button" class="secondary-btn" id="cancelEdit" style="margin-top:8px">清除表單</button>
+      </form>
     </div>
 
     <div class="card">
@@ -209,7 +213,7 @@
       <button class="secondary-btn" id="backupBtn" style="margin-top:8px">匯出備份 JSON</button>
       <label class="secondary-btn" style="display:block;text-align:center;margin-top:8px;cursor:pointer">
         匯入備份 JSON
-        <input type="file" id="restoreInput" accept=".js?v=20261010-1830on,application/json" hidden>
+        <input type="file" id="restoreInput" accept=".json,application/json" hidden>
       </label>
       <button class="secondary-btn" id="clearBtn" style="margin-top:8px;color:#d84b4b">清除所有資料</button>
       <p class="summary-note">資料儲存在此瀏覽器的 LocalStorage。若更換手機或清除瀏覽器資料，請先匯出備份。</p>
@@ -293,6 +297,8 @@ function safeSelectRecordDate(date){
   }
 }
 function safeSaveRecord(event){
+  const status=document.getElementById('detailSaveStatus');
+  if(status){status.textContent='正在儲存…';status.style.color='#1677ff';}
   if(event){
     try{event.preventDefault();event.stopImmediatePropagation();}catch(e){}
   }
@@ -300,6 +306,7 @@ function safeSaveRecord(event){
     const revenueEl=document.getElementById('fRevenue');
     const revenue=Number(revenueEl?.value);
     if(!Number.isFinite(revenue) || revenueEl?.value===''){
+      if(status){status.textContent='請輸入本筆營收金額';status.style.color='#d94646';}
       alert('請輸入本筆營收金額。');
       revenueEl?.focus();
       return false;
@@ -350,6 +357,7 @@ function safeSaveRecord(event){
     state.lastSavedAt=new Date().toISOString();
     localStorage.setItem(stateKey,JSON.stringify(state));
 
+    if(typeof clearDraft==='function') clearDraft();
     if(document.getElementById('editId')) document.getElementById('editId').value='';
     if(revenueEl) revenueEl.value='';
     if(document.getElementById('fPickup')) document.getElementById('fPickup').value='';
@@ -366,8 +374,10 @@ function safeSaveRecord(event){
     }catch(e){}
 
     if(typeof safeRenderRecordDay==='function') safeRenderRecordDay(date);
+    if(status){status.textContent='✓ 已儲存 '+date.replaceAll('-','/');status.style.color='#0d9d63';}
     return false;
   }catch(err){
+    if(status){status.textContent='儲存失敗：'+(err?.message||'未知錯誤');status.style.color='#d94646';}
     alert('儲存失敗，請再試一次');
     console.error(err);
     return false;
@@ -422,7 +432,7 @@ const APP_STATE_KEY='mobileBookkeepingAppStateV1';
 const DRAFT_KEY='mobileBookkeepingDraftV1';
 
 const $ = s => document.querySelector(s);
-const $ = s => [...document.querySelectorAll(s)];
+const $$ = s => [...document.querySelectorAll(s)];
 
 function pad(n){return String(n).padStart(2,'0')}
 function toISO(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
@@ -499,7 +509,7 @@ function syncBusinessDayUI(){
   const y=new Date();y.setDate(y.getDate()-1);
   const by=new Date();by.setDate(by.getDate()-2);
   const map={today,yesterday:toISO(y),beforeYesterday:toISO(by)};
-  $('#recordDateQuick [data-record-day]').forEach(b=>{
+  $$('#recordDateQuick [data-record-day]').forEach(b=>{
     const val=map[b.dataset.recordDay];
     b.classList.toggle('active',val===viewDate);
     b.disabled=false;
@@ -569,7 +579,7 @@ function setRange(type){
   const [s,e]=getRangePreset(type);
   currentStart=s;currentEnd=e;
   $('#startDate').value=s;$('#endDate').value=e;
-  $('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range===type));
+  $$('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range===type));
   saveAppState({quickRange:type,startDate:s,endDate:e});
   renderHome();
 }
@@ -892,22 +902,22 @@ window.deleteRecord=function(id){
 }
 
 function switchView(name){
-  $('.view').forEach(v=>v.classList.remove('active'));$('#view-'+name).classList.add('active');
-  $('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  $$('.view').forEach(v=>v.classList.remove('active'));$('#view-'+name).classList.add('active');
+  $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
   saveAppState({activeView:name});
   if(name==='home')renderHome();if(name==='record'){syncBusinessDayUI();renderAllRecords();renderPunch();}if(name==='stats')renderStats();if(name==='car')renderCar();
 }
 
-$('#quickGrid .quick-btn').forEach(b=>b.addEventListener('click',()=>setRange(b.dataset.range)));
+$$('#quickGrid .quick-btn').forEach(b=>b.addEventListener('click',()=>setRange(b.dataset.range)));
 $('#applyDate').addEventListener('click',()=>{
   const s=$('#startDate').value,e=$('#endDate').value;
   if(!s||!e||s>e){alert('請確認日期區間');return}
-  currentStart=s;currentEnd=e;$('.quick-btn').forEach(x=>x.classList.remove('active'));
+  currentStart=s;currentEnd=e;$$('.quick-btn').forEach(x=>x.classList.remove('active'));
   saveAppState({quickRange:'custom',startDate:s,endDate:e});
   renderHome()
 });
 $('#compareMode').addEventListener('change',()=>{saveAppState({compareMode:$('#compareMode').value});renderCompare();});
-$('#recordDateQuick [data-record-day]').forEach(b=>b.addEventListener('click',()=>{
+$$('#recordDateQuick [data-record-day]').forEach(b=>b.addEventListener('click',()=>{
   const d=new Date();
   if(b.dataset.recordDay==='yesterday')d.setDate(d.getDate()-1);
   if(b.dataset.recordDay==='beforeYesterday')d.setDate(d.getDate()-2);
@@ -924,7 +934,7 @@ $('#recordDatePicker').addEventListener('change',()=>{
   renderAllRecords();
   renderPunch();
 });
-$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+$$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
 ['fRevenue','fPayment','fPickup','fDropoff','fNote'].forEach(id=>{
   const el=$('#'+id);
   if(el){
@@ -1003,18 +1013,18 @@ function restoreAppState(){
     currentEnd=state.endDate||e;
     $('#startDate').value=currentStart;
     $('#endDate').value=currentEnd;
-    $('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range===state.quickRange));
+    $$('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range===state.quickRange));
   }else if(state.startDate && state.endDate){
     currentStart=state.startDate;
     currentEnd=state.endDate;
     $('#startDate').value=currentStart;
     $('#endDate').value=currentEnd;
-    $('.quick-btn').forEach(b=>b.classList.remove('active'));
+    $$('.quick-btn').forEach(b=>b.classList.remove('active'));
   }else{
     const [s,e]=getRangePreset('7d');
     currentStart=s;currentEnd=e;
     $('#startDate').value=s;$('#endDate').value=e;
-    $('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range==='7d'));
+    $$('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range==='7d'));
   }
 
   $('#startOdo').value=state.pendingStartOdo||'';
@@ -1023,10 +1033,10 @@ function restoreAppState(){
   clearForm(true);
 
   const view=state.activeView||'home';
-  $('.view').forEach(v=>v.classList.remove('active'));
+  $$('.view').forEach(v=>v.classList.remove('active'));
   const target=$('#view-'+view);
   if(target)target.classList.add('active');
-  $('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+  $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
 }
 
 restoreAppState();
