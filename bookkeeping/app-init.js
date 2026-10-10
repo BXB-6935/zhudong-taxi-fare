@@ -10,20 +10,24 @@ function renderPunch(){
   }else{
     off.style.display='block'; on.style.display='none';
     badge.textContent='尚未上線';badge.style.background='#eef2f7';badge.style.color='#64748b';
-    if(!$('#editId').value){$('#fDate').value='';$('#fDateDisplay').value='尚未上線'}
+    if(!$('#editId').value){
+      const day=selectedBusinessDate();
+      $('#fDate').value=day;$('#fDateDisplay').value=fmtDate(day);
+    }
   }
-  const today=toISO(new Date());
-  const todaySessions=loadSessions().filter(x=>x.date===today);
-  const closed=todaySessions.filter(x=>x.endAt);
+  syncBusinessDayUI();
+  const businessDay=s?s.date:selectedBusinessDate();
+  const daySessions=loadSessions().filter(x=>x.date===businessDay);
+  const closed=daySessions.filter(x=>x.endAt);
   const hours=closed.reduce((a,x)=>a+Math.max(0,(new Date(x.endAt)-new Date(x.startAt))/3600000),0);
   const km=closed.reduce((a,x)=>a+Math.max(0,(+x.endOdo||0)-(+x.startOdo||0)),0);
-  const todayRows=loadRecords().filter(r=>r.date===today);
+  const todayRows=loadRecords().filter(r=>r.date===businessDay);
   $('#todayPunchSummary').innerHTML=`
     <div class="mini-compare">
-      <div class="mini b"><strong>${num(hours)} 小時</strong><span>今日已完成工時</span></div>
-      <div class="mini g"><strong>${num(km)} km</strong><span>今日已完成里程</span></div>
-      <div class="mini o"><strong>${todayRows.length} 單</strong><span>今日明細筆數</span></div>
-      <div class="mini p"><strong>${money(todayRows.reduce((a,r)=>a+(+r.revenue||0),0))}</strong><span>今日營收</span></div>
+      <div class="mini b"><strong>${num(hours)} 小時</strong><span>本營業日已完成工時</span></div>
+      <div class="mini g"><strong>${num(km)} km</strong><span>本營業日已完成里程</span></div>
+      <div class="mini o"><strong>${todayRows.length} 單</strong><span>本營業日明細筆數</span></div>
+      <div class="mini p"><strong>${money(todayRows.reduce((a,r)=>a+(+r.revenue||0),0))}</strong><span>本營業日營收</span></div>
     </div>`;
 }
 
@@ -36,7 +40,7 @@ function punchIn(){
   sessions.push({id:sid,date:toISO(now),startAt:localDateTime(now),startOdo:km,endAt:null,endOdo:null});
   saveSessions(sessions);
   $('#startOdo').value='';
-  saveAppState({pendingStartOdo:''});
+  saveAppState({pendingStartOdo:'',recordDate:toISO(now)});
   clearForm();renderPunch();renderAll();toast('已完成上線進卡');
 }
 
@@ -51,7 +55,7 @@ function punchOut(){
   sessions[idx]={...sessions[idx],endAt:localDateTime(now),endOdo:km};
   saveSessions(sessions);
   $('#endOdo').value='';
-  saveAppState({pendingEndOdo:''});
+  saveAppState({pendingEndOdo:'',recordDate:s.date});
   clearForm();renderPunch();renderAll();toast('已完成下線出卡，工時與公里已自動計算');
 }
 
@@ -64,7 +68,7 @@ function switchView(name){
   $$('.view').forEach(v=>v.classList.remove('active'));$('#view-'+name).classList.add('active');
   $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
   saveAppState({activeView:name});
-  if(name==='home')renderHome();if(name==='record'){renderAllRecords();renderPunch();}if(name==='stats')renderStats();if(name==='car')renderCar();
+  if(name==='home')renderHome();if(name==='record'){syncBusinessDayUI();renderAllRecords();renderPunch();}if(name==='stats')renderStats();if(name==='car')renderCar();
 }
 
 $$('.quick-btn').forEach(b=>b.addEventListener('click',()=>setRange(b.dataset.range)));
@@ -76,7 +80,26 @@ $('#applyDate').addEventListener('click',()=>{
   renderHome()
 });
 $('#compareMode').addEventListener('change',()=>{saveAppState({compareMode:$('#compareMode').value});renderCompare();});
-$$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+$('#recordDateQuick [data-record-day]').forEach(b=>b.addEventListener('click',()=>{
+  if(activeSession()){syncBusinessDayUI();toast('上線中不能切換營業日');return}
+  const d=new Date();
+  if(b.dataset.recordDay==='yesterday')d.setDate(d.getDate()-1);
+  if(b.dataset.recordDay==='beforeYesterday')d.setDate(d.getDate()-2);
+  setSelectedBusinessDate(toISO(d));
+  clearForm();
+  renderAllRecords();
+  renderPunch();
+}));
+$('#recordDatePicker').addEventListener('change',()=>{
+  if(activeSession()){syncBusinessDayUI();toast('上線中不能切換營業日');return}
+  const d=$('#recordDatePicker').value;
+  if(!d)return;
+  setSelectedBusinessDate(d);
+  clearForm();
+  renderAllRecords();
+  renderPunch();
+});
+$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
 ['fRevenue','fPayment','fPickup','fDropoff','fNote'].forEach(id=>{
   const el=$('#'+id);
   if(el){
@@ -89,12 +112,7 @@ $('#saveRecord').addEventListener('click',()=>{
   const existing=id?loadRecords().find(r=>r.id===id):null;
   const s=activeSession();
 
-  if(!id && !s){
-    alert('請先完成「上線進卡」，才能登記每一筆營收明細。');
-    switchView('record');window.scrollTo({top:0,behavior:'smooth'});return;
-  }
-
-  const date=id && existing ? existing.date : s.date;
+  const date=id && existing ? existing.date : (s?s.date:selectedBusinessDate());
   const revenue=Number($('#fRevenue').value);
   if(!Number.isFinite(revenue) || $('#fRevenue').value===''){alert('請輸入本筆營收金額。');$('#fRevenue').focus();return}
 
@@ -116,7 +134,7 @@ $('#saveRecord').addEventListener('click',()=>{
     note
   };
   if(id)rows=rows.map(r=>r.id===id?rec:r);else rows.push(rec);
-  saveRecords(rows);clearForm();renderAll();renderPunch();toast(id?'已更新這一筆':'已新增一筆營收');
+  saveRecords(rows);saveAppState({recordDate:date});clearForm();renderAll();renderPunch();syncBusinessDayUI();toast(id?'已更新這一筆':'已新增一筆營收');
 });
 $('#cancelEdit').addEventListener('click',clearForm);
 $('#punchInBtn').addEventListener('click',punchIn);
@@ -216,5 +234,6 @@ function restoreAppState(){
 }
 
 restoreAppState();
+syncBusinessDayUI();
 renderAll();
 renderPunch();
