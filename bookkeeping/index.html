@@ -221,17 +221,44 @@
 </main>
 
 <nav class="bottom-nav">
-  <button class="nav-btn active" data-view="home"><span class="nicon">🏠</span><span>首頁</span></button>
-  <button class="nav-btn" data-view="record"><span class="nicon">🧾</span><span>記錄</span></button>
-  <button class="nav-btn" data-view="stats"><span class="nicon">📊</span><span>統計</span></button>
-  <button class="nav-btn" data-view="car"><span class="nicon">🚗</span><span>車輛</span></button>
-  <button class="nav-btn" data-view="settings"><span class="nicon">⚙️</span><span>設定</span></button>
+  <button class="nav-btn active" data-view="home" onclick="safeSwitchView('home')"><span class="nicon">🏠</span><span>首頁</span></button>
+  <button class="nav-btn" data-view="record" onclick="safeSwitchView('record')"><span class="nicon">🧾</span><span>記錄</span></button>
+  <button class="nav-btn" data-view="stats" onclick="safeSwitchView('stats')"><span class="nicon">📊</span><span>統計</span></button>
+  <button class="nav-btn" data-view="car" onclick="safeSwitchView('car')"><span class="nicon">🚗</span><span>車輛</span></button>
+  <button class="nav-btn" data-view="settings" onclick="safeSwitchView('settings')"><span class="nicon">⚙️</span><span>設定</span></button>
 </nav>
 
 <div class="toast" id="toast"></div>
 
-<script src="app-core.js?v=20261010-1656"></script>
-<script src="app-ui.js?v=20261010-1656"></script>
-<script src="app-init.js?v=20261010-1656"></script>
+<script>
+function safeSwitchView(name){
+  try{
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    const target=document.getElementById('view-'+name);
+    if(target) target.classList.add('active');
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+    try{
+      const raw=localStorage.getItem('mobileBookkeepingAppStateV1');
+      const state=raw?JSON.parse(raw):{};
+      state.activeView=name;
+      state.lastSavedAt=new Date().toISOString();
+      localStorage.setItem('mobileBookkeepingAppStateV1',JSON.stringify(state));
+    }catch(e){}
+    if(name==='home' && typeof renderHome==='function') renderHome();
+    if(name==='record'){
+      if(typeof syncBusinessDayUI==='function') syncBusinessDayUI();
+      if(typeof renderAllRecords==='function') renderAllRecords();
+      if(typeof renderPunch==='function') renderPunch();
+    }
+    if(name==='stats' && typeof renderStats==='function') renderStats();
+    if(name==='car' && typeof renderCar==='function') renderCar();
+  }catch(e){
+    console.error('safeSwitchView',e);
+  }
+}
+</script>
+<script src="app-core-20261010-1710.js"></script>
+<script src="app-ui-20261010-1710.js"></script>
+<script src="app-init-20261010-1710.js"></script>
 </body>
 </html>
