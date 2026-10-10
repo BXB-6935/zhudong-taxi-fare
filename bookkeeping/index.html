@@ -106,13 +106,13 @@
     <div class="card">
       <div class="section-title"><span>📅 記帳營業日</span><span id="businessDayBadge" style="font-size:12px;color:#64748b">未選擇</span></div>
       <div class="quick-grid" id="recordDateQuick">
-        <button class="quick-btn" data-record-day="today">今天</button>
-        <button class="quick-btn" data-record-day="yesterday">昨天</button>
-        <button class="quick-btn" data-record-day="beforeYesterday">前天</button>
+        <button type="button" class="quick-btn" data-record-day="today" onclick="safeSelectRecordDay(0)">今天</button>
+        <button type="button" class="quick-btn" data-record-day="yesterday" onclick="safeSelectRecordDay(-1)">昨天</button>
+        <button type="button" class="quick-btn" data-record-day="beforeYesterday" onclick="safeSelectRecordDay(-2)">前天</button>
       </div>
       <div class="field" style="margin-top:10px">
         <label>日曆快選</label>
-        <input type="date" id="recordDatePicker">
+        <input type="date" id="recordDatePicker" onchange="safeSelectRecordDate(this.value)">
       </div>
       <p class="summary-note" id="businessDayHint">跨過凌晨 00:00 不會自動換日；上線期間固定以進卡當天作為營業日。</p>
     </div>
@@ -231,6 +231,70 @@
 <div class="toast" id="toast"></div>
 
 <script>
+function safeISODate(d){
+  const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+function safeSelectRecordDay(offset){
+  const d=new Date();
+  d.setHours(12,0,0,0);
+  d.setDate(d.getDate()+offset);
+  safeSelectRecordDate(safeISODate(d));
+}
+function safeEsc(v){
+  return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function safeRenderRecordDay(date){
+  try{
+    const raw=localStorage.getItem('mobileBookkeepingRecordsV1');
+    const rows=(raw?JSON.parse(raw):[]).filter(r=>r.date===date)
+      .sort((a,b)=>(Number(b.sequence||0)-Number(a.sequence||0)));
+    const title=document.getElementById('recordListTitle');
+    if(title) title.textContent='🧾 '+date.replaceAll('-','/')+' 明細';
+    const body=document.getElementById('allBody');
+    if(body){
+      body.innerHTML=rows.length?rows.map(r=>'<tr>'+
+        '<td>'+safeEsc((r.date||'').replaceAll('-','/'))+'</td>'+
+        '<td>#'+safeEsc(r.sequence||1)+'</td>'+
+        '<td>'+safeEsc(r.pickup||'-')+'</td>'+
+        '<td>'+safeEsc(r.dropoff||'-')+'</td>'+
+        '<td>NT$ '+Number(r.revenue||0).toLocaleString('zh-TW')+'</td>'+
+        '<td>'+safeEsc(r.payment||'-')+'</td>'+
+        '<td>'+safeEsc(r.note||'-')+'</td>'+
+        '<td class="action-cell"></td></tr>').join('')
+        :'<tr><td colspan="8" class="empty">此日期尚無紀錄</td></tr>';
+    }
+  }catch(e){ console.error('safeRenderRecordDay',e); }
+}
+function safeSelectRecordDate(date){
+  if(!date) return;
+  try{
+    const raw=localStorage.getItem('mobileBookkeepingAppStateV1');
+    const state=raw?JSON.parse(raw):{};
+    state.recordDate=date;
+    state.lastSavedAt=new Date().toISOString();
+    localStorage.setItem('mobileBookkeepingAppStateV1',JSON.stringify(state));
+  }catch(e){}
+  const picker=document.getElementById('recordDatePicker');
+  if(picker){ picker.disabled=false; picker.value=date; }
+  const today=new Date(); today.setHours(12,0,0,0);
+  const map={};
+  map.today=safeISODate(today);
+  const y=new Date(today); y.setDate(y.getDate()-1); map.yesterday=safeISODate(y);
+  const b=new Date(today); b.setDate(b.getDate()-2); map.beforeYesterday=safeISODate(b);
+  document.querySelectorAll('#recordDateQuick [data-record-day]').forEach(btn=>{
+    btn.disabled=false;
+    btn.classList.toggle('active',map[btn.dataset.recordDay]===date);
+  });
+  try{
+    if(typeof setSelectedBusinessDate==='function') setSelectedBusinessDate(date);
+    if(typeof syncBusinessDayUI==='function') syncBusinessDayUI();
+    if(typeof renderAllRecords==='function') renderAllRecords(); else safeRenderRecordDay(date);
+    if(typeof renderPunch==='function') renderPunch();
+  }catch(e){
+    safeRenderRecordDay(date);
+  }
+}
 function safeSwitchView(name){
   try{
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -257,8 +321,8 @@ function safeSwitchView(name){
   }
 }
 </script>
-<script src="app-core-20261010-1710.js?v=20261010-1722"></script>
-<script src="app-ui-20261010-1710.js?v=20261010-1722"></script>
-<script src="app-init-20261010-1710.js?v=20261010-1722"></script>
+<script src="app-core-20261010-1740.js"></script>
+<script src="app-ui-20261010-1740.js"></script>
+<script src="app-init-20261010-1740.js"></script>
 </body>
 </html>
