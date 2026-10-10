@@ -79,7 +79,7 @@ function syncBusinessDayUI(){
   const y=new Date();y.setDate(y.getDate()-1);
   const by=new Date();by.setDate(by.getDate()-2);
   const map={today,yesterday:toISO(y),beforeYesterday:toISO(by)};
-  $('#recordDateQuick [data-record-day]').forEach(b=>{
+  $$('#recordDateQuick [data-record-day]').forEach(b=>{
     const val=map[b.dataset.recordDay];
     b.classList.toggle('active',val===date);
     b.disabled=!!s;
