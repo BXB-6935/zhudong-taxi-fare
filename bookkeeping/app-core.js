@@ -42,6 +42,49 @@ function saveAppState(patch={}){
   const state={...loadAppState(),...patch,lastSavedAt:new Date().toISOString()};
   localStorage.setItem(APP_STATE_KEY,JSON.stringify(state));
 }
+function selectedBusinessDate(){
+  const s=activeSession();
+  if(s) return s.date;
+  const state=loadAppState();
+  return state.recordDate || toISO(new Date());
+}
+function setSelectedBusinessDate(date){
+  if(!date)return;
+  const s=activeSession();
+  if(s && s.date!==date){
+    toast('上線中營業日固定為 '+fmtDate(s.date)+'，下線後才能切換日期');
+    syncBusinessDayUI();
+    return;
+  }
+  saveAppState({recordDate:date});
+  syncBusinessDayUI();
+}
+function syncBusinessDayUI(){
+  const date=selectedBusinessDate();
+  const picker=$('#recordDatePicker');
+  const badge=$('#businessDayBadge');
+  const hint=$('#businessDayHint');
+  const s=activeSession();
+  if(picker){
+    picker.value=date;
+    picker.disabled=!!s;
+  }
+  if(badge) badge.textContent=(s?'上線中・':'')+fmtDate(date);
+  if(hint){
+    hint.textContent=s
+      ? '目前上線中，跨過凌晨 00:00 仍持續計入 '+fmtDate(date)+'，直到下線出卡。'
+      : '可用今天／昨天／前天或日曆切換；跨日不會自動把上一個營業日歸零。';
+  }
+  const today=toISO(new Date());
+  const y=new Date();y.setDate(y.getDate()-1);
+  const by=new Date();by.setDate(by.getDate()-2);
+  const map={today,yesterday:toISO(y),beforeYesterday:toISO(by)};
+  $('#recordDateQuick [data-record-day]').forEach(b=>{
+    const val=map[b.dataset.recordDay];
+    b.classList.toggle('active',val===date);
+    b.disabled=!!s;
+  });
+}
 function saveDraft(){
   const data={
     revenue:$('#fRevenue')?.value||'',
