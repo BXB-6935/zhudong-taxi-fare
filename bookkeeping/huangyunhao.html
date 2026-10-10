@@ -19,7 +19,7 @@
     </div>
     <div class="user-chip">
       <div class="avatar">👤</div>
-      <span>黃耘浩</span><span style="font-size:10px;color:#bcd6ff">● 自動記憶</span>
+      <span>黃耘浩</span><span id="globalOnlineBadge" style="font-size:11px;font-weight:800;padding:5px 8px;border-radius:999px;background:#eef2f7;color:#64748b;white-space:nowrap">⚪ 未上線</span><span style="font-size:10px;color:#bcd6ff">● 自動記憶</span>
     </div>
   </div>
 </header>
@@ -423,6 +423,26 @@ function safeSwitchView(name){
   window.addEventListener('pageshow',forceRecordLinks);
   setTimeout(forceRecordLinks,300);
   setTimeout(forceRecordLinks,1200);
+})();
+</script>
+<script data-global-online-badge>
+(function(){
+  const SESSION_KEY='hyhBookkeepingSessionsV1';
+  function syncGlobalOnlineBadge(){
+    const badge=document.getElementById('globalOnlineBadge');
+    if(!badge)return;
+    let sessions=[];
+    try{sessions=JSON.parse(localStorage.getItem(SESSION_KEY)||'[]')}catch(e){}
+    const online=Array.isArray(sessions)&&sessions.some(s=>!s.endAt);
+    badge.textContent=online?'🟢 上線中':'⚪ 未上線';
+    badge.style.background=online?'#e8faf2':'#eef2f7';
+    badge.style.color=online?'#0d9d63':'#64748b';
+  }
+  window.syncGlobalOnlineBadge=syncGlobalOnlineBadge;
+  document.addEventListener('DOMContentLoaded',syncGlobalOnlineBadge);
+  window.addEventListener('pageshow',syncGlobalOnlineBadge);
+  window.addEventListener('storage',syncGlobalOnlineBadge);
+  setInterval(syncGlobalOnlineBadge,1000);
 })();
 </script>
 </body>
