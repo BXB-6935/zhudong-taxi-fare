@@ -168,7 +168,7 @@
         <div class="field"><label>下車地點</label><input type="text" id="fDropoff" placeholder="可不填"></div>
         <div class="field full"><label>備註</label><input type="text" id="fNote" placeholder="可不填"></div>
       </div>
-      <button class="primary-btn" id="saveRecord">儲存紀錄</button>
+      <button type="button" class="primary-btn" id="saveRecord" onclick="safeSaveRecord(event)">儲存紀錄</button>
       <button class="secondary-btn" id="cancelEdit" style="margin-top:8px">清除表單</button>
     </div>
 
@@ -212,7 +212,7 @@
       <button class="secondary-btn" id="backupBtn" style="margin-top:8px">匯出備份 JSON</button>
       <label class="secondary-btn" style="display:block;text-align:center;margin-top:8px;cursor:pointer">
         匯入備份 JSON
-        <input type="file" id="restoreInput" accept=".json,application/json" hidden>
+        <input type="file" id="restoreInput" accept=".js?v=20261010-1830on,application/json" hidden>
       </label>
       <button class="secondary-btn" id="clearBtn" style="margin-top:8px;color:#d84b4b">清除所有資料</button>
       <p class="summary-note">資料儲存在此瀏覽器的 LocalStorage。若更換手機或清除瀏覽器資料，請先匯出備份。</p>
@@ -295,6 +295,87 @@ function safeSelectRecordDate(date){
     safeRenderRecordDay(date);
   }
 }
+function safeSaveRecord(event){
+  if(event){
+    try{event.preventDefault();event.stopImmediatePropagation();}catch(e){}
+  }
+  try{
+    const revenueEl=document.getElementById('fRevenue');
+    const revenue=Number(revenueEl?.value);
+    if(!Number.isFinite(revenue) || revenueEl?.value===''){
+      alert('請輸入本筆營收金額。');
+      revenueEl?.focus();
+      return false;
+    }
+
+    const recordsKey='hyhBookkeepingRecordsV1';
+    const sessionsKey='hyhBookkeepingSessionsV1';
+    const stateKey='hyhBookkeepingAppStateV1';
+
+    let rows=[];
+    let sessions=[];
+    try{rows=JSON.parse(localStorage.getItem(recordsKey)||'[]')}catch(e){}
+    try{sessions=JSON.parse(localStorage.getItem(sessionsKey)||'[]')}catch(e){}
+
+    const active=sessions.find(s=>!s.endAt) || null;
+    let state={};
+    try{state=JSON.parse(localStorage.getItem(stateKey)||'{}')}catch(e){}
+
+    const editId=document.getElementById('editId')?.value || '';
+    const existing=editId?rows.find(r=>r.id===editId):null;
+    const date=existing?.date || active?.date || state.recordDate || safeISODate(new Date());
+
+    const payment=document.getElementById('fPayment')?.value || '現金';
+    const pickup=(document.getElementById('fPickup')?.value || '').trim();
+    const dropoff=(document.getElementById('fDropoff')?.value || '').trim();
+    const note=(document.getElementById('fNote')?.value || '').trim();
+
+    let sequence=existing?.sequence;
+    if(!sequence) sequence=rows.filter(r=>r.date===date).length+1;
+
+    const rec={
+      id:editId || (Date.now().toString(36)+Math.random().toString(36).slice(2,7)),
+      sessionId:existing?.sessionId || active?.id || null,
+      date,
+      sequence,
+      revenue,
+      payment,
+      pickup,
+      dropoff,
+      note
+    };
+
+    if(editId) rows=rows.map(r=>r.id===editId?rec:r);
+    else rows.push(rec);
+
+    localStorage.setItem(recordsKey,JSON.stringify(rows));
+    state.recordDate=date;
+    state.lastSavedAt=new Date().toISOString();
+    localStorage.setItem(stateKey,JSON.stringify(state));
+
+    if(document.getElementById('editId')) document.getElementById('editId').value='';
+    if(revenueEl) revenueEl.value='';
+    if(document.getElementById('fPickup')) document.getElementById('fPickup').value='';
+    if(document.getElementById('fDropoff')) document.getElementById('fDropoff').value='';
+    if(document.getElementById('fNote')) document.getElementById('fNote').value='';
+    if(document.getElementById('fPayment')) document.getElementById('fPayment').value='現金';
+
+    try{
+      if(typeof renderAllRecords==='function') renderAllRecords();
+      if(typeof renderPunch==='function') renderPunch();
+      if(typeof renderHome==='function') renderHome();
+      if(typeof renderStats==='function') renderStats();
+      if(typeof toast==='function') toast(editId?'已更新這一筆':'已新增一筆營收');
+    }catch(e){}
+
+    if(typeof safeRenderRecordDay==='function') safeRenderRecordDay(date);
+    return false;
+  }catch(err){
+    alert('儲存失敗，請再試一次');
+    console.error(err);
+    return false;
+  }
+}
 function safeSwitchView(name){
   try{
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -321,9 +402,9 @@ function safeSwitchView(name){
   }
 }
 </script>
-<script src="app-core-huangyunhao.js"></script>
-<script src="app-ui-huangyunhao.js"></script>
-<script src="app-init-huangyunhao.js"></script>
+<script src="app-core-huangyunhao.js?v=20261010-1830"></script>
+<script src="app-ui-huangyunhao.js?v=20261010-1830"></script>
+<script src="app-init-huangyunhao.js?v=20261010-1830"></script>
 <script>
 (function(){
   function forceRecordLinks(){
