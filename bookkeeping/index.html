@@ -212,7 +212,7 @@
       <button class="secondary-btn" id="backupBtn" style="margin-top:8px">匯出備份 JSON</button>
       <label class="secondary-btn" style="display:block;text-align:center;margin-top:8px;cursor:pointer">
         匯入備份 JSON
-        <input type="file" id="restoreInput" accept=".js?v=20261010-1830on,application/json" hidden>
+        <input type="file" id="restoreInput" accept=".json,application/json" hidden>
       </label>
       <button class="secondary-btn" id="clearBtn" style="margin-top:8px;color:#d84b4b">清除所有資料</button>
       <p class="summary-note">資料儲存在此瀏覽器的 LocalStorage。若更換手機或清除瀏覽器資料，請先匯出備份。</p>
@@ -895,22 +895,22 @@ window.deleteRecord=function(id){
 }
 
 function switchView(name){
-  $('.view').forEach(v=>v.classList.remove('active'));$('#view-'+name).classList.add('active');
-  $('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
+  $$('.view').forEach(v=>v.classList.remove('active'));$('#view-'+name).classList.add('active');
+  $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===name));
   saveAppState({activeView:name});
   if(name==='home')renderHome();if(name==='record'){syncBusinessDayUI();renderAllRecords();renderPunch();}if(name==='stats')renderStats();if(name==='car')renderCar();
 }
 
-$('#quickGrid .quick-btn').forEach(b=>b.addEventListener('click',()=>setRange(b.dataset.range)));
+$$('#quickGrid .quick-btn').forEach(b=>b.addEventListener('click',()=>setRange(b.dataset.range)));
 $('#applyDate').addEventListener('click',()=>{
   const s=$('#startDate').value,e=$('#endDate').value;
   if(!s||!e||s>e){alert('請確認日期區間');return}
-  currentStart=s;currentEnd=e;$('.quick-btn').forEach(x=>x.classList.remove('active'));
+  currentStart=s;currentEnd=e;$$('.quick-btn').forEach(x=>x.classList.remove('active'));
   saveAppState({quickRange:'custom',startDate:s,endDate:e});
   renderHome()
 });
 $('#compareMode').addEventListener('change',()=>{saveAppState({compareMode:$('#compareMode').value});renderCompare();});
-$('#recordDateQuick [data-record-day]').forEach(b=>b.addEventListener('click',()=>{
+$$('#recordDateQuick [data-record-day]').forEach(b=>b.addEventListener('click',()=>{
   const d=new Date();
   if(b.dataset.recordDay==='yesterday')d.setDate(d.getDate()-1);
   if(b.dataset.recordDay==='beforeYesterday')d.setDate(d.getDate()-2);
@@ -927,7 +927,7 @@ $('#recordDatePicker').addEventListener('change',()=>{
   renderAllRecords();
   renderPunch();
 });
-$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+$$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
 ['fRevenue','fPayment','fPickup','fDropoff','fNote'].forEach(id=>{
   const el=$('#'+id);
   if(el){
@@ -1006,18 +1006,18 @@ function restoreAppState(){
     currentEnd=state.endDate||e;
     $('#startDate').value=currentStart;
     $('#endDate').value=currentEnd;
-    $('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range===state.quickRange));
+    $$('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range===state.quickRange));
   }else if(state.startDate && state.endDate){
     currentStart=state.startDate;
     currentEnd=state.endDate;
     $('#startDate').value=currentStart;
     $('#endDate').value=currentEnd;
-    $('.quick-btn').forEach(b=>b.classList.remove('active'));
+    $$('.quick-btn').forEach(b=>b.classList.remove('active'));
   }else{
     const [s,e]=getRangePreset('7d');
     currentStart=s;currentEnd=e;
     $('#startDate').value=s;$('#endDate').value=e;
-    $('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range==='7d'));
+    $$('.quick-btn').forEach(b=>b.classList.toggle('active',b.dataset.range==='7d'));
   }
 
   $('#startOdo').value=state.pendingStartOdo||'';
@@ -1026,16 +1026,26 @@ function restoreAppState(){
   clearForm(true);
 
   const view=state.activeView||'home';
-  $('.view').forEach(v=>v.classList.remove('active'));
+  $$('.view').forEach(v=>v.classList.remove('active'));
   const target=$('#view-'+view);
   if(target)target.classList.add('active');
-  $('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+  $$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
 }
 
 restoreAppState();
 syncBusinessDayUI();
 renderAll();
 renderPunch();
+</script>
+
+<script data-detail-save-guard>
+document.addEventListener('click',function(e){
+  const btn=e.target && e.target.closest ? e.target.closest('#saveRecord') : null;
+  if(!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if(typeof safeSaveRecord==='function') safeSaveRecord(e);
+},true);
 </script>
 
 </body>
