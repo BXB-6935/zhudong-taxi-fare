@@ -71,7 +71,7 @@ function switchView(name){
   if(name==='home')renderHome();if(name==='record'){syncBusinessDayUI();renderAllRecords();renderPunch();}if(name==='stats')renderStats();if(name==='car')renderCar();
 }
 
-$$('.quick-btn').forEach(b=>b.addEventListener('click',()=>setRange(b.dataset.range)));
+$$('#quickGrid .quick-btn').forEach(b=>b.addEventListener('click',()=>setRange(b.dataset.range)));
 $('#applyDate').addEventListener('click',()=>{
   const s=$('#startDate').value,e=$('#endDate').value;
   if(!s||!e||s>e){alert('請確認日期區間');return}
@@ -80,7 +80,7 @@ $('#applyDate').addEventListener('click',()=>{
   renderHome()
 });
 $('#compareMode').addEventListener('change',()=>{saveAppState({compareMode:$('#compareMode').value});renderCompare();});
-$('#recordDateQuick [data-record-day]').forEach(b=>b.addEventListener('click',()=>{
+$$('#recordDateQuick [data-record-day]').forEach(b=>b.addEventListener('click',()=>{
   if(activeSession()){syncBusinessDayUI();toast('上線中不能切換營業日');return}
   const d=new Date();
   if(b.dataset.recordDay==='yesterday')d.setDate(d.getDate()-1);
@@ -99,7 +99,7 @@ $('#recordDatePicker').addEventListener('change',()=>{
   renderAllRecords();
   renderPunch();
 });
-$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+$$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
 ['fRevenue','fPayment','fPickup','fDropoff','fNote'].forEach(id=>{
   const el=$('#'+id);
   if(el){
