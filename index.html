@@ -101,7 +101,7 @@ body{margin:0;height:100%;display:flex;flex-direction:column;overflow:hidden;bac
 .action-btn.tel{background:#111;color:var(--gold2)}
 .action-btn.line{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#111}
 .contact-qr{width:100px;height:100px;border-radius:14px;border:3px solid #111;object-fit:cover;background:#fff}
-.care-type-filters{margin-top:0;margin-bottom:6px}.care-type-tag{display:inline-block;margin-top:7px;padding:4px 8px;border-radius:999px;background:#fff3ba;color:#594500;font-size:11px;font-weight:900}.care-card .hotel-card-top{padding-bottom:12px}
+.night-care-block{margin-top:16px;padding-top:12px;border-top:2px dashed #bbbbbb}.night-care-title{font-size:15px;font-weight:900;color:#111;margin-bottom:5px}.night-care-description{font-size:12px;line-height:1.6;color:#555;margin-bottom:10px}.night-care-block .care-type-tag{background:#e8e8e8;color:#333}.care-type-filters{margin-top:0;margin-bottom:6px}.care-type-tag{display:inline-block;margin-top:7px;padding:4px 8px;border-radius:999px;background:#fff3ba;color:#594500;font-size:11px;font-weight:900}.care-card .hotel-card-top{padding-bottom:12px}
 @media(max-width:440px){.stats{grid-template-columns:repeat(2,1fr)}.tab{font-size:10px}.tab .ico{font-size:19px}}
 .hotel-alert{display:flex;gap:10px;align-items:flex-start;background:#fff3a6;border:2px solid #d6b100;border-radius:15px;padding:11px 12px;margin-bottom:12px;font-size:13px;font-weight:900;line-height:1.55}
 .hotel-alert .alert-ico{font-size:22px;line-height:1}
@@ -181,19 +181,24 @@ body{margin:0;height:100%;display:flex;flex-direction:column;overflow:hidden;bac
 </section>
 <section class="page" id="page-care">
   <div class="card"><div class="head head-row"><span>💆 24小時護膚理容</span><span class="badge">17 間</span></div><div class="body">
-    <div class="hotel-alert"><span class="alert-ico">💡</span><span>本頁僅收錄公開營業資訊標示「每日24小時」的美容、按摩與舒壓店家；尚未能確認全天營業者已排除。臨時休業、換班及服務項目可能異動，載客前請先致電確認。</span></div>
+    <div class="hotel-alert"><span class="alert-ico">💡</span><span>主要名單僅收錄公開資訊標示每日24小時營業的店家。您指定的「相逢」實際營業時間不是24H，另外列於下方「深夜營業」區，避免誤認；載客前請先致電確認。</span></div>
     <div class="hotel-search"><input id="careSearch" type="search" inputmode="search" autocomplete="off" placeholder="搜尋店名、地區、地址或服務類型"><button class="clear-btn" id="clearCareSearch">✕</button></div>
     <div class="searchhint">依地區及類型快速篩選；點擊電話可直接撥號。</div>
     <div class="filter-row" id="careAreaFilters"></div>
     <div class="filter-row care-type-filters" id="careTypeFilters"></div>
     <div class="list-tools"><span class="result-count" id="careResultCount">17 間</span></div>
     <div class="hotel-list" id="careList"></div>
+    <div class="night-care-block" id="lateNightCareSection">
+      <div class="night-care-title">🌙 另列｜深夜營業（非24H）</div>
+      <div class="night-care-description">相逢官網首頁雖有24小時標語，但營業時間欄實際標示 10:00–翌日05:00，故不計入上方17間24H名單。</div>
+      <div class="hotel-list" id="lateNightCareList"></div>
+    </div>
     <div class="hotel-source">24H 資料查核：2026/10/11。依店家官方公告或公開商家營業時間篩選；不是現場即時營業狀態。尚未查到可確認全天營業的新埔店家，暫不收錄。夜間載客前請先撥號確認。</div>
   </div></div>
 </section>
 <section class="page" id="page-info">
   <div class="stats"><div class="stat"><div class="l">資料版本</div><div class="v">115年9月</div></div><div class="stat"><div class="l">目的地</div><div class="v">586 筆</div></div><div class="stat"><div class="l">汽旅電話</div><div class="v">23 間</div></div><div class="stat"><div class="l">24H護膚</div><div class="v">17 間</div></div></div>
-  <section class="card"><div class="head">📄 工具資訊</div><div class="body tips">• 全部車資均為「竹東鎮出發」。<br>• 已依115年9月更新版 PDF 逐筆核對 586 筆。<br>• 可直接搜尋地名、區域及部分舊稱。<br>• 加價、轉點、超載等規則請查看「規則」分頁。<br>• 汽旅電話僅供快速聯絡，房況請以業者電話回覆為準。<br>• 護膚理容僅顯示公開資料標示每日24小時營業的店家；異動請先電話確認。</div></section>
+  <section class="card"><div class="head">📄 工具資訊</div><div class="body tips">• 全部車資均為「竹東鎮出發」。<br>• 已依115年9月更新版 PDF 逐筆核對 586 筆。<br>• 可直接搜尋地名、區域及部分舊稱。<br>• 加價、轉點、超載等規則請查看「規則」分頁。<br>• 汽旅電話僅供快速聯絡，房況請以業者電話回覆為準。<br>• 護膚理容主要名單為17間公開資料標示每日24小時營業的店家；另有1間您指定的深夜營業店（非24H）獨立標示。異動請先電話確認。</div></section>
   <div class="footer">竹東計程車價目表｜汽旅電話版</div>
 </section>
 </div>
@@ -249,6 +254,10 @@ const careStores=[
   {group:'新豐',area:'新豐鄉',type:'按摩舒壓',name:'凱紅養生館',phone:'0973-646778',address:'新竹縣新豐鄉新興路146-2號',verification:'公開商家營業時間為每日24小時'}
 ];
 
+const lateNightCareStores=[
+  {group:'新竹市',area:'北區',type:'美容SPA',name:'喜相逢美容名店',phone:'03-5233355',address:'新竹市北區西大路443號',hours:'10:00–翌日05:00',verification:'店家官網營業時段10:00–翌日05:00；商業登記地址為西大路441號，導航前建議確認實際入口'}
+];
+
 let selectedKey=''; let activeRegion='全部';
 const $=id=>document.getElementById(id); const regionSelect=$('regionSelect'), destinationSelect=$('destinationSelect'), globalSearch=$('globalSearch'), globalList=$('globalList');
 function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
@@ -280,7 +289,7 @@ function buildCareFilters(){
 }
 function renderCare(){
   const q=$('careSearch').value.trim().toLowerCase();
-  let list=careStores.filter(x=>(activeCareArea==='全部'||x.group===activeCareArea)&&(activeCareType==='全部'||x.type===activeCareType));
+  let list=careStores.filter(x=>(activeCareArea==='全部'||x.group===activeCareArea)&&(activeCareType==='全部'||x.type===activeCareType)).sort((a,b)=>{const priority=['Q18美容名店','真情美容名店'];const ai=priority.indexOf(a.name),bi=priority.indexOf(b.name);return (ai<0?99:ai)-(bi<0?99:bi)});
   if(q)list=list.filter(x=>(x.name+' '+x.group+' '+x.area+' '+x.address+' '+x.phone+' '+x.type).toLowerCase().includes(q));
   $('careResultCount').textContent=list.length+' 間';
   $('careList').innerHTML=list.length?list.map((x,i)=>{
@@ -289,6 +298,17 @@ function renderCare(){
     return `<article class="hotel-card care-card"><div class="hotel-card-top"><div class="hotel-title-row"><div class="hotel-name">${esc(x.name)}</div><span class="hotel-area">${esc(x.group==='新竹市'?'新竹市'+x.area:x.area)}</span></div><div class="care-type-tag">🕒 24H・${esc(x.type==='美容SPA'?'美容／SPA':x.type)}</div><div class="hotel-address">📍 ${esc(x.address)}</div><div class="hotel-address">${esc(x.verification)}</div><a class="hotel-phone" href="tel:${tel}">${esc(x.phone)}</a></div><div class="hotel-actions"><a class="hotel-action call" href="tel:${tel}">📞 一鍵撥號</a><button class="hotel-action copy-phone" type="button" data-index="${i}">📋 複製電話</button><a class="hotel-action map" href="${map}" target="_blank" rel="noopener">🧭 導航</a></div></article>`;
   }).join(''):'<div class="empty">找不到符合的護膚理容店家</div>';
   $('careList').querySelectorAll('.copy-phone').forEach(btn=>btn.onclick=()=>copyHotelPhone(list[Number(btn.dataset.index)].phone));
+  renderLateNightCare(q);
+}
+function renderLateNightCare(q){
+  const list=lateNightCareStores.filter(x=>(activeCareArea==='全部'||x.group===activeCareArea)&&(activeCareType==='全部'||x.type===activeCareType)&&(!q||(x.name+' '+x.group+' '+x.area+' '+x.address+' '+x.phone+' '+x.type).toLowerCase().includes(q)));
+  $('lateNightCareSection').style.display=list.length?'block':'none';
+  $('lateNightCareList').innerHTML=list.map((x,i)=>{
+    const tel=x.phone.replace(/[^0-9+]/g,'');
+    const map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.address);
+    return `<article class="hotel-card care-card"><div class="hotel-card-top"><div class="hotel-title-row"><div class="hotel-name">${esc(x.name)}</div><span class="hotel-area">${esc(x.group==='新竹市'?'新竹市'+x.area:x.area)}</span></div><div class="care-type-tag">🌙 ${esc(x.hours)}・非24H</div><div class="hotel-address">📍 ${esc(x.address)}</div><div class="hotel-address">${esc(x.verification)}</div><a class="hotel-phone" href="tel:${tel}">${esc(x.phone)}</a></div><div class="hotel-actions"><a class="hotel-action call" href="tel:${tel}">📞 一鍵撥號</a><button class="hotel-action copy-phone" type="button" data-index="${i}">📋 複製電話</button><a class="hotel-action map" href="${map}" target="_blank" rel="noopener">🧭 導航</a></div></article>`;
+  }).join('');
+  $('lateNightCareList').querySelectorAll('.copy-phone').forEach(btn=>btn.onclick=()=>copyHotelPhone(list[Number(btn.dataset.index)].phone));
 }
 $('careSearch').oninput=()=>{$('clearCareSearch').style.display=$('careSearch').value?'block':'none';renderCare()};
 $('clearCareSearch').onclick=()=>{$('careSearch').value='';$('clearCareSearch').style.display='none';renderCare();$('careSearch').focus()};
