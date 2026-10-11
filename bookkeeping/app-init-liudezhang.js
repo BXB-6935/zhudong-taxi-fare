@@ -80,7 +80,7 @@ $('#applyDate').addEventListener('click',()=>{
   renderHome()
 });
 $('#compareMode').addEventListener('change',()=>{saveAppState({compareMode:$('#compareMode').value});renderCompare();});
-$('#recordDateQuick [data-record-day]').forEach(b=>b.addEventListener('click',()=>{
+$$('#recordDateQuick [data-record-day]').forEach(b=>b.addEventListener('click',()=>{
   const d=new Date();
   if(b.dataset.recordDay==='yesterday')d.setDate(d.getDate()-1);
   if(b.dataset.recordDay==='beforeYesterday')d.setDate(d.getDate()-2);
