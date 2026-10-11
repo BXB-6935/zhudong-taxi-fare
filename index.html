@@ -180,20 +180,20 @@ body{margin:0;height:100%;display:flex;flex-direction:column;overflow:hidden;bac
   </div></div>
 </section>
 <section class="page" id="page-care">
-  <div class="card"><div class="head head-row"><span>💆 新竹縣市護膚理容</span><span class="badge">32 間</span></div><div class="body">
-    <div class="hotel-alert"><span class="alert-ico">💡</span><span>收錄美容護膚、SPA、按摩舒壓與足體養生店家。營業、服務項目及預約方式可能異動，出車前請先致電確認。</span></div>
+  <div class="card"><div class="head head-row"><span>💆 24小時護膚理容</span><span class="badge">17 間</span></div><div class="body">
+    <div class="hotel-alert"><span class="alert-ico">💡</span><span>本頁僅收錄公開營業資訊標示「每日24小時」的美容、按摩與舒壓店家；尚未能確認全天營業者已排除。臨時休業、換班及服務項目可能異動，載客前請先致電確認。</span></div>
     <div class="hotel-search"><input id="careSearch" type="search" inputmode="search" autocomplete="off" placeholder="搜尋店名、地區、地址或服務類型"><button class="clear-btn" id="clearCareSearch">✕</button></div>
     <div class="searchhint">依地區及類型快速篩選；點擊電話可直接撥號。</div>
     <div class="filter-row" id="careAreaFilters"></div>
     <div class="filter-row care-type-filters" id="careTypeFilters"></div>
-    <div class="list-tools"><span class="result-count" id="careResultCount">32 間</span></div>
+    <div class="list-tools"><span class="result-count" id="careResultCount">17 間</span></div>
     <div class="hotel-list" id="careList"></div>
-    <div class="hotel-source">資料整理日期：2026/10/11。名單依公開商家資訊、部分店家官網及店家列表整理，非即時營業保證；電話、店址與服務內容請以店家最新資訊為準。</div>
+    <div class="hotel-source">24H 資料查核：2026/10/11。依店家官方公告或公開商家營業時間篩選；不是現場即時營業狀態。尚未查到可確認全天營業的新埔店家，暫不收錄。夜間載客前請先撥號確認。</div>
   </div></div>
 </section>
 <section class="page" id="page-info">
-  <div class="stats"><div class="stat"><div class="l">資料版本</div><div class="v">115年9月</div></div><div class="stat"><div class="l">目的地</div><div class="v">586 筆</div></div><div class="stat"><div class="l">汽旅電話</div><div class="v">23 間</div></div><div class="stat"><div class="l">護膚理容</div><div class="v">32 間</div></div></div>
-  <section class="card"><div class="head">📄 工具資訊</div><div class="body tips">• 全部車資均為「竹東鎮出發」。<br>• 已依115年9月更新版 PDF 逐筆核對 586 筆。<br>• 可直接搜尋地名、區域及部分舊稱。<br>• 加價、轉點、超載等規則請查看「規則」分頁。<br>• 汽旅電話僅供快速聯絡，房況請以業者電話回覆為準。<br>• 新增護膚理容查詢，包含美容 SPA、按摩舒壓與足體養生店家。</div></section>
+  <div class="stats"><div class="stat"><div class="l">資料版本</div><div class="v">115年9月</div></div><div class="stat"><div class="l">目的地</div><div class="v">586 筆</div></div><div class="stat"><div class="l">汽旅電話</div><div class="v">23 間</div></div><div class="stat"><div class="l">24H護膚</div><div class="v">17 間</div></div></div>
+  <section class="card"><div class="head">📄 工具資訊</div><div class="body tips">• 全部車資均為「竹東鎮出發」。<br>• 已依115年9月更新版 PDF 逐筆核對 586 筆。<br>• 可直接搜尋地名、區域及部分舊稱。<br>• 加價、轉點、超載等規則請查看「規則」分頁。<br>• 汽旅電話僅供快速聯絡，房況請以業者電話回覆為準。<br>• 護膚理容僅顯示公開資料標示每日24小時營業的店家；異動請先電話確認。</div></section>
   <div class="footer">竹東計程車價目表｜汽旅電話版</div>
 </section>
 </div>
@@ -230,38 +230,23 @@ const hotels=[
   {group:'新豐',area:'新豐鄉',name:'春城汽車旅館',phone:'03-5573377',address:'新竹縣新豐鄉中興路176號'}
 ];
 const careStores=[
-  {group:'新竹市',area:'東區',type:'按摩舒壓',name:'FUN輕鬆指壓工坊・清大店',phone:'03-5712770',address:'新竹市東區光復路二段350號3樓'},
-  {group:'新竹市',area:'東區',type:'按摩舒壓',name:'FUN輕鬆指壓工坊・金山店',phone:'03-6686625',address:'新竹市東區金山十街16號'},
-  {group:'新竹市',area:'北區',type:'按摩舒壓',name:'群豐養生會館・新竹旗艦店',phone:'03-5353613',address:'新竹市北區經國路二段139號'},
-  {group:'新竹市',area:'東區',type:'美容SPA',name:'新竹悠活美學女子SPA・巨城店',phone:'03-5327585',address:'新竹市東區中央路302號'},
-  {group:'新竹市',area:'東區',type:'美容SPA',name:'靜靜舒心 Herblands Spa',phone:'03-5322990',address:'新竹市東區三民路43號2樓'},
-  {group:'新竹市',area:'東區',type:'足體養生',name:'立足天下・新竹旗艦館',phone:'03-5335639',address:'新竹市東區中華路二段160號'},
-  {group:'新竹市',area:'東區',type:'足體養生',name:'足旺養生會館・光華總店',phone:'03-5322003',address:'新竹市東區光華東街9號'},
-  {group:'新竹市',area:'香山區',type:'按摩舒壓',name:'泰安養生館',phone:'03-5401081',address:'新竹市香山區牛埔東路111號'},
-  {group:'新竹市',area:'東區',type:'美容SPA',name:'新竹日式雲芳療 Yun Spa・巨城店',phone:'0982-702214',address:'新竹市東區中央路311號2樓'},
-  {group:'新竹市',area:'東區',type:'美容SPA',name:'窈窕佳人・中央店',phone:'03-5357787',address:'新竹市東區中央路348號'},
-  {group:'新竹市',area:'北區',type:'美容SPA',name:'E spa 苡瑪芮麗美學館・新竹店',phone:'0903-811626',address:'新竹市北區金雅三街91號'},
-  {group:'竹北',area:'竹北市',type:'美容SPA',name:'荷爾莯 HEMU SPA',phone:'03-6688727',address:'新竹縣竹北市成功十五街46號'},
-  {group:'竹北',area:'竹北市',type:'美容SPA',name:'木容會館・竹北館',phone:'03-6583192',address:'新竹縣竹北市光明六路東二段95-3號'},
-  {group:'竹北',area:'竹北市',type:'按摩舒壓',name:'FUN輕鬆指壓工坊・竹北店',phone:'03-6682638',address:'新竹縣竹北市新瀧二街3號'},
-  {group:'竹北',area:'竹北市',type:'按摩舒壓',name:'經典男女養生館',phone:'03-6673926',address:'新竹縣竹北市隘口二路143號'},
-  {group:'竹北',area:'竹北市',type:'按摩舒壓',name:'舒活越式洗髮按摩館',phone:'03-6670437',address:'新竹縣竹北市嘉興路168巷7號'},
-  {group:'竹北',area:'竹北市',type:'按摩舒壓',name:'洗酸坊・竹北經絡按摩SPA',phone:'0917-607380',address:'新竹縣竹北市勝利十街18號'},
-  {group:'竹北',area:'竹北市',type:'美容SPA',name:'新竹澐紜SPA會館',phone:'03-6571108',address:'新竹縣竹北市縣政一街143號'},
-  {group:'竹東',area:'竹東鎮',type:'按摩舒壓',name:'FUN輕鬆指壓工坊・竹東店',phone:'03-5955898',address:'新竹縣竹東鎮東寧路二段319號'},
-  {group:'竹東',area:'竹東鎮',type:'按摩舒壓',name:'竹榮養生館',phone:'03-5100108',address:'新竹縣竹東鎮竹榮街38號'},
-  {group:'竹東',area:'竹東鎮',type:'足體養生',name:'吾禪足體養生會館・竹東旭光店',phone:'03-5820868',address:'新竹縣竹東鎮旭光二路3號'},
-  {group:'湖口',area:'湖口鄉',type:'按摩舒壓',name:'鍾師父養生館',phone:'03-5901398',address:'新竹縣湖口鄉成功路90號'},
-  {group:'湖口',area:'湖口鄉',type:'按摩舒壓',name:'李師傅健康養生館',phone:'03-5996218',address:'新竹縣湖口鄉成功路36號'},
-  {group:'湖口',area:'湖口鄉',type:'按摩舒壓',name:'絡境・經絡調理',phone:'03-6109559',address:'新竹縣湖口鄉中山一街25號'},
-  {group:'湖口',area:'湖口鄉',type:'美容SPA',name:'Win Spa 越式洗髮',phone:'0987-026557',address:'新竹縣湖口鄉仁愛路136號'},
-  {group:'新豐',area:'新豐鄉',type:'按摩舒壓',name:'安心養生館',phone:'0968-827733',address:'新竹縣新豐鄉松柏街55號'},
-  {group:'新豐',area:'新豐鄉',type:'按摩舒壓',name:'釋萱健康養生館',phone:'0966-872900',address:'新竹縣新豐鄉松林街67號'},
-  {group:'新豐',area:'新豐鄉',type:'美容SPA',name:'蘊涵美學SPA',phone:'03-5571065',address:'新竹縣新豐鄉松林街35號'},
-  {group:'新豐',area:'新豐鄉',type:'美容SPA',name:'采蓁極致美學',phone:'03-5593111',address:'新竹縣新豐鄉明新一街171號'},
-  {group:'新豐',area:'新豐鄉',type:'美容SPA',name:'辰雨SPA美容・新豐店',phone:'0970-895002',address:'新竹縣新豐鄉建興路一段201巷22弄7號'},
-  {group:'新埔',area:'新埔鎮',type:'按摩舒壓',name:'婷婷泰式按摩',phone:'0917-655753',address:'新竹縣新埔鎮福德街92號'},
-  {group:'新埔',area:'新埔鎮',type:'美容SPA',name:'Candy女王彩妝婚企／護膚',phone:'0919-119144',address:'新竹縣新埔鎮關埔路水車頭段219號'}
+  {group:'新竹市',area:'東區',type:'美容SPA',name:'K7美容名店',phone:'03-5278777',address:'新竹市東區東門街80號',verification:'店家官方網站公告24小時全年無休'},
+  {group:'新竹市',area:'東區',type:'足體養生',name:'立足天下足體養生會館・新竹旗艦店',phone:'03-5335639',address:'新竹市東區中華路二段160號',verification:'店家2026年9月公告24小時營業'},
+  {group:'新竹市',area:'東區',type:'美容SPA',name:'Q18美容名店',phone:'03-5332555',address:'新竹市東區北大路24號',verification:'公開商家資訊標示24小時營業'},
+  {group:'新竹市',area:'北區',type:'按摩舒壓',name:'威尼斯時尚養生會館',phone:'03-5347777',address:'新竹市北區經國路二段62號',verification:'公開商家營業時間為每日24小時'},
+  {group:'新竹市',area:'東區',type:'足體養生',name:'未來健康養生館',phone:'03-5620003',address:'新竹市東區光復路二段988號',verification:'公開商家營業時間為每日24小時'},
+  {group:'新竹市',area:'北區',type:'美容SPA',name:'真情美容名店',phone:'03-5252777',address:'新竹市北區北大路324號5樓',verification:'公開商家營業時間為每日24小時'},
+  {group:'新竹市',area:'東區',type:'按摩舒壓',name:'藍月亮時尚會館',phone:'03-5620368',address:'新竹市東區花園街12號',verification:'公開商家營業時間為每日24小時'},
+  {group:'新竹市',area:'北區',type:'按摩舒壓',name:'綠美金養生館',phone:'03-5285588',address:'新竹市北區四維路34號',verification:'公開商家營業時間為每日24小時'},
+  {group:'新竹市',area:'東區',type:'足體養生',name:'安來養生館',phone:'03-5355333',address:'新竹市東區北大路22-1號',verification:'公開商家營業時間為每日24小時'},
+  {group:'新竹市',area:'東區',type:'按摩舒壓',name:'全順渼時尚館',phone:'03-5629959',address:'新竹市東區南大路7號',verification:'公開商家營業時間為每日24小時'},
+  {group:'竹北',area:'竹北市',type:'按摩舒壓',name:'鄉親養生館',phone:'03-6589388',address:'新竹縣竹北市自強南路251號',verification:'公開商家營業時間為每日24小時'},
+  {group:'竹北',area:'竹北市',type:'足體養生',name:'不老松足湯養身行館・竹北行館',phone:'03-6570353',address:'新竹縣竹北市光明六路33號',verification:'合作通路標示週一至週日24H'},
+  {group:'竹北',area:'竹北市',type:'按摩舒壓',name:'艾來越式洗頭・竹北高鐵旗艦店',phone:'03-6684148',address:'新竹縣竹北市文興路二段300號',verification:'公開商家營業時間為每日24小時'},
+  {group:'竹東',area:'竹東鎮',type:'按摩舒壓',name:'薌奈爾養生館',phone:'0908-061009',address:'新竹縣竹東鎮中興路二段432號',verification:'公開商家營業時間為每日24小時'},
+  {group:'湖口',area:'湖口鄉',type:'按摩舒壓',name:'24H越鑽男女紓壓養生館',phone:'0903-825689',address:'新竹縣湖口鄉新興路610號',verification:'公開商家營業時間為每日24小時'},
+  {group:'湖口',area:'湖口鄉',type:'按摩舒壓',name:'歐悅舒壓推拿',phone:'0910-610772',address:'新竹縣湖口鄉德興路91號',verification:'公開商家營業時間為每日24小時'},
+  {group:'新豐',area:'新豐鄉',type:'按摩舒壓',name:'凱紅養生館',phone:'0973-646778',address:'新竹縣新豐鄉新興路146-2號',verification:'公開商家營業時間為每日24小時'}
 ];
 
 let selectedKey=''; let activeRegion='全部';
@@ -286,7 +271,7 @@ $('hotelSearch').oninput=()=>{$('clearHotelSearch').style.display=$('hotelSearch
 
 let activeCareArea='全部',activeCareType='全部';
 function buildCareFilters(){
-  const areas=['全部','新竹市','竹北','竹東','湖口','新豐','新埔'];
+  const areas=['全部','新竹市','竹北','竹東','湖口','新豐'];
   const types=['全部','美容SPA','按摩舒壓','足體養生'];
   $('careAreaFilters').innerHTML=areas.map(g=>`<button class="chip ${g===activeCareArea?'active':''}" data-area="${g}">${g}</button>`).join('');
   $('careAreaFilters').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{activeCareArea=btn.dataset.area;buildCareFilters();renderCare()});
@@ -301,7 +286,7 @@ function renderCare(){
   $('careList').innerHTML=list.length?list.map((x,i)=>{
     const tel=x.phone.replace(/[^0-9+]/g,'');
     const map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.address);
-    return `<article class="hotel-card care-card"><div class="hotel-card-top"><div class="hotel-title-row"><div class="hotel-name">${esc(x.name)}</div><span class="hotel-area">${esc(x.group==='新竹市'?'新竹市'+x.area:x.area)}</span></div><div class="care-type-tag">${esc(x.type==='美容SPA'?'美容／SPA':x.type)}</div><div class="hotel-address">📍 ${esc(x.address)}</div><a class="hotel-phone" href="tel:${tel}">${esc(x.phone)}</a></div><div class="hotel-actions"><a class="hotel-action call" href="tel:${tel}">📞 一鍵撥號</a><button class="hotel-action copy-phone" type="button" data-index="${i}">📋 複製電話</button><a class="hotel-action map" href="${map}" target="_blank" rel="noopener">🧭 導航</a></div></article>`;
+    return `<article class="hotel-card care-card"><div class="hotel-card-top"><div class="hotel-title-row"><div class="hotel-name">${esc(x.name)}</div><span class="hotel-area">${esc(x.group==='新竹市'?'新竹市'+x.area:x.area)}</span></div><div class="care-type-tag">🕒 24H・${esc(x.type==='美容SPA'?'美容／SPA':x.type)}</div><div class="hotel-address">📍 ${esc(x.address)}</div><div class="hotel-address">${esc(x.verification)}</div><a class="hotel-phone" href="tel:${tel}">${esc(x.phone)}</a></div><div class="hotel-actions"><a class="hotel-action call" href="tel:${tel}">📞 一鍵撥號</a><button class="hotel-action copy-phone" type="button" data-index="${i}">📋 複製電話</button><a class="hotel-action map" href="${map}" target="_blank" rel="noopener">🧭 導航</a></div></article>`;
   }).join(''):'<div class="empty">找不到符合的護膚理容店家</div>';
   $('careList').querySelectorAll('.copy-phone').forEach(btn=>btn.onclick=()=>copyHotelPhone(list[Number(btn.dataset.index)].phone));
 }
