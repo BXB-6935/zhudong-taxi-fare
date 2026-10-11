@@ -180,25 +180,19 @@ body{margin:0;height:100%;display:flex;flex-direction:column;overflow:hidden;bac
   </div></div>
 </section>
 <section class="page" id="page-care">
-  <div class="card"><div class="head head-row"><span>💆 24小時護膚理容</span><span class="badge">17 間</span></div><div class="body">
-    <div class="hotel-alert"><span class="alert-ico">💡</span><span>主要名單僅收錄公開資訊標示每日24小時營業的店家。您指定的「相逢」實際營業時間不是24H，另外列於下方「深夜營業」區，避免誤認；載客前請先致電確認。</span></div>
-    <div class="hotel-search"><input id="careSearch" type="search" inputmode="search" autocomplete="off" placeholder="搜尋店名、地區、地址或服務類型"><button class="clear-btn" id="clearCareSearch">✕</button></div>
-    <div class="searchhint">依地區及類型快速篩選；點擊電話可直接撥號。</div>
-    <div class="filter-row" id="careAreaFilters"></div>
-    <div class="filter-row care-type-filters" id="careTypeFilters"></div>
-    <div class="list-tools"><span class="result-count" id="careResultCount">17 間</span></div>
+  <div class="card"><div class="head head-row"><span>💆 夜間護膚理容</span><span class="badge">10 間</span></div><div class="body">
+    <div class="hotel-alert"><span class="alert-ico">🌙</span><span>以Q18、真情、喜相逢這類美容護膚理容名店為主，包含24小時與營業到凌晨的店家。不是全部24H，搭車前請先電話確認。</span></div>
+    <div class="hotel-search"><input id="careSearch" type="search" inputmode="search" autocomplete="off" placeholder="搜尋Q18、真情、相逢、店名或地區"><button class="clear-btn" id="clearCareSearch">✕</button></div>
+    <div class="searchhint">可以依地區、全天或深夜營業篩選，提供電話與導航。</div>
+    <div class="filter-row" id="careAreaFilters"></div><div class="filter-row care-type-filters" id="careTypeFilters"></div>
+    <div class="list-tools"><span class="result-count" id="careResultCount">10 間</span></div>
     <div class="hotel-list" id="careList"></div>
-    <div class="night-care-block" id="lateNightCareSection">
-      <div class="night-care-title">🌙 另列｜深夜營業（非24H）</div>
-      <div class="night-care-description">相逢官網首頁雖有24小時標語，但營業時間欄實際標示 10:00–翌日05:00，故不計入上方17間24H名單。</div>
-      <div class="hotel-list" id="lateNightCareList"></div>
-    </div>
-    <div class="hotel-source">24H 資料查核：2026/10/11。依店家官方公告或公開商家營業時間篩選；不是現場即時營業狀態。尚未查到可確認全天營業的新埔店家，暫不收錄。夜間載客前請先撥號確認。</div>
+    <div class="hotel-source">資料核對：2026/10/11；依店家官網、商家地圖及商業登記整理。K7的公開時段資訊有差異；營業時間及接待狀況以店家電話回覆為準。目前僅列已找到足夠資訊的同類型店家。</div>
   </div></div>
 </section>
 <section class="page" id="page-info">
-  <div class="stats"><div class="stat"><div class="l">資料版本</div><div class="v">115年9月</div></div><div class="stat"><div class="l">目的地</div><div class="v">586 筆</div></div><div class="stat"><div class="l">汽旅電話</div><div class="v">23 間</div></div><div class="stat"><div class="l">24H護膚</div><div class="v">17 間</div></div></div>
-  <section class="card"><div class="head">📄 工具資訊</div><div class="body tips">• 全部車資均為「竹東鎮出發」。<br>• 已依115年9月更新版 PDF 逐筆核對 586 筆。<br>• 可直接搜尋地名、區域及部分舊稱。<br>• 加價、轉點、超載等規則請查看「規則」分頁。<br>• 汽旅電話僅供快速聯絡，房況請以業者電話回覆為準。<br>• 護膚理容主要名單為17間公開資料標示每日24小時營業的店家；另有1間您指定的深夜營業店（非24H）獨立標示。異動請先電話確認。</div></section>
+  <div class="stats"><div class="stat"><div class="l">資料版本</div><div class="v">115年9月</div></div><div class="stat"><div class="l">目的地</div><div class="v">586 筆</div></div><div class="stat"><div class="l">汽旅電話</div><div class="v">23 間</div></div><div class="stat"><div class="l">夜間護膚</div><div class="v">10 間</div></div></div>
+  <section class="card"><div class="head">📄 工具資訊</div><div class="body tips">• 全部車資均為「竹東鎮出發」。<br>• 已依115年9月更新版 PDF 逐筆核對 586 筆。<br>• 可直接搜尋地名、區域及部分舊稱。<br>• 加價、轉點、超載等規則請查看「規則」分頁。<br>• 汽旅電話僅供快速聯絡，房況請以業者電話回覆為準。<br>• 夜間護膚理容收錄Q18、真情、喜相逢及同類型美容名店，時段分為24H與營業到凌晨。</div></section>
   <div class="footer">竹東計程車價目表｜汽旅電話版</div>
 </section>
 </div>
@@ -235,29 +229,17 @@ const hotels=[
   {group:'新豐',area:'新豐鄉',name:'春城汽車旅館',phone:'03-5573377',address:'新竹縣新豐鄉中興路176號'}
 ];
 const careStores=[
-  {group:'新竹市',area:'東區',type:'美容SPA',name:'K7美容名店',phone:'03-5278777',address:'新竹市東區東門街80號',verification:'店家官方網站公告24小時全年無休'},
-  {group:'新竹市',area:'東區',type:'足體養生',name:'立足天下足體養生會館・新竹旗艦店',phone:'03-5335639',address:'新竹市東區中華路二段160號',verification:'店家2026年9月公告24小時營業'},
-  {group:'新竹市',area:'東區',type:'美容SPA',name:'Q18美容名店',phone:'03-5332555',address:'新竹市東區北大路24號',verification:'公開商家資訊標示24小時營業'},
-  {group:'新竹市',area:'北區',type:'按摩舒壓',name:'威尼斯時尚養生會館',phone:'03-5347777',address:'新竹市北區經國路二段62號',verification:'公開商家營業時間為每日24小時'},
-  {group:'新竹市',area:'東區',type:'足體養生',name:'未來健康養生館',phone:'03-5620003',address:'新竹市東區光復路二段988號',verification:'公開商家營業時間為每日24小時'},
-  {group:'新竹市',area:'北區',type:'美容SPA',name:'真情美容名店',phone:'03-5252777',address:'新竹市北區北大路324號5樓',verification:'公開商家營業時間為每日24小時'},
-  {group:'新竹市',area:'東區',type:'按摩舒壓',name:'藍月亮時尚會館',phone:'03-5620368',address:'新竹市東區花園街12號',verification:'公開商家營業時間為每日24小時'},
-  {group:'新竹市',area:'北區',type:'按摩舒壓',name:'綠美金養生館',phone:'03-5285588',address:'新竹市北區四維路34號',verification:'公開商家營業時間為每日24小時'},
-  {group:'新竹市',area:'東區',type:'足體養生',name:'安來養生館',phone:'03-5355333',address:'新竹市東區北大路22-1號',verification:'公開商家營業時間為每日24小時'},
-  {group:'新竹市',area:'東區',type:'按摩舒壓',name:'全順渼時尚館',phone:'03-5629959',address:'新竹市東區南大路7號',verification:'公開商家營業時間為每日24小時'},
-  {group:'竹北',area:'竹北市',type:'按摩舒壓',name:'鄉親養生館',phone:'03-6589388',address:'新竹縣竹北市自強南路251號',verification:'公開商家營業時間為每日24小時'},
-  {group:'竹北',area:'竹北市',type:'足體養生',name:'不老松足湯養身行館・竹北行館',phone:'03-6570353',address:'新竹縣竹北市光明六路33號',verification:'合作通路標示週一至週日24H'},
-  {group:'竹北',area:'竹北市',type:'按摩舒壓',name:'艾來越式洗頭・竹北高鐵旗艦店',phone:'03-6684148',address:'新竹縣竹北市文興路二段300號',verification:'公開商家營業時間為每日24小時'},
-  {group:'竹東',area:'竹東鎮',type:'按摩舒壓',name:'薌奈爾養生館',phone:'0908-061009',address:'新竹縣竹東鎮中興路二段432號',verification:'公開商家營業時間為每日24小時'},
-  {group:'湖口',area:'湖口鄉',type:'按摩舒壓',name:'24H越鑽男女紓壓養生館',phone:'0903-825689',address:'新竹縣湖口鄉新興路610號',verification:'公開商家營業時間為每日24小時'},
-  {group:'湖口',area:'湖口鄉',type:'按摩舒壓',name:'歐悅舒壓推拿',phone:'0910-610772',address:'新竹縣湖口鄉德興路91號',verification:'公開商家營業時間為每日24小時'},
-  {group:'新豐',area:'新豐鄉',type:'按摩舒壓',name:'凱紅養生館',phone:'0973-646778',address:'新竹縣新豐鄉新興路146-2號',verification:'公開商家營業時間為每日24小時'}
+  {group:'新竹市',area:'東區',name:'Q18美容名店',phone:'03-5332555',address:'新竹市東區北大路24號',hours:'24小時營業',timeType:'24H',verification:'商家資訊標示24H',source:'https://i-formosa.com/places/17900/'},
+  {group:'新竹市',area:'北區',name:'真情美容名店',phone:'03-5252777',address:'新竹市北區北大路324號5樓',hours:'24小時營業',timeType:'24H',verification:'商家資訊標示24H',source:'https://findbiz.nat.gov.tw/fts/business/34930047/21200000000005580374'},
+  {group:'新竹市',area:'北區',name:'喜相逢美容名店（相逢）',phone:'03-5233355',address:'新竹市北區西大路441號',hours:'10:00–翌日05:00',timeType:'夜間',verification:'非24H；商家資訊營業至05:00，導航入口可能為443號',source:'https://findbiz.nat.gov.tw/fts/business/41221668/41200000000011634800'},
+  {group:'新竹市',area:'東區',name:'K7美容名店',phone:'03-5278777',address:'新竹市東區東門街80號',hours:'24H（請先確認）',timeType:'24H',verification:'不同商家資料有24H與10:00–05:00兩種標示，請電話確認',source:'https://i-formosa.com/places/category/spa/taiwan/hsinchu-city/'},
+  {group:'新竹市',area:'北區',name:'玫瑰園美容護膚名店',phone:'03-5341999',address:'新竹市北區經國路二段131號2樓',hours:'12:00–翌日05:00',timeType:'夜間',verification:'公開商家資訊營業至凌晨05:00',source:'https://i-formosa.com/places/17849/'},
+  {group:'新竹市',area:'北區',name:'星美容名店（Newspa）',phone:'03-5260077',address:'新竹市北區林森路316號',hours:'09:00–翌日05:00',timeType:'夜間',verification:'公開商家資訊營業至凌晨05:00',source:'https://spa.novice.tw/s_store_details.php?id=523'},
+  {group:'新竹市',area:'北區',name:'美人湯SPA美容名店',phone:'03-5250505',address:'新竹市北區林森路212號',hours:'12:00–翌日05:00',timeType:'夜間',verification:'店家官網公告營業時間',source:'https://beautyspatw.com/'},
+  {group:'新竹市',area:'東區',name:'艾菲爾精品美容',phone:'03-5322088',address:'新竹市東區民生路167號',hours:'12:00–翌日05:00',timeType:'夜間',verification:'店家網站公告營業時間',source:'https://hc035322088.weebly.com/38364260442510520497.html'},
+  {group:'新竹市',area:'東區',name:'水悅時尚會館（原愛悅）',phone:'03-5312345',address:'新竹市東區民生路34號',hours:'24小時營業',timeType:'24H',verification:'公開商家資訊標示24H',source:'https://i-formosa.com/places/17504/'},
+  {group:'新豐',area:'新豐鄉',name:'秘密Spa美容名店',phone:'03-5597997',address:'新竹縣新豐鄉新興路460號',hours:'13:00–翌日04:00',timeType:'夜間',verification:'公開商家資訊營業至凌晨04:00',source:'https://www.google.com/maps/search/?api=1&query=%E7%A7%98%E5%AF%86Spa%E7%BE%8E%E5%AE%B9%E5%90%8D%E5%BA%97'}
 ];
-
-const lateNightCareStores=[
-  {group:'新竹市',area:'北區',type:'美容SPA',name:'喜相逢美容名店',phone:'03-5233355',address:'新竹市北區西大路443號',hours:'10:00–翌日05:00',verification:'店家官網營業時段10:00–翌日05:00；商業登記地址為西大路441號，導航前建議確認實際入口'}
-];
-
 let selectedKey=''; let activeRegion='全部';
 const $=id=>document.getElementById(id); const regionSelect=$('regionSelect'), destinationSelect=$('destinationSelect'), globalSearch=$('globalSearch'), globalList=$('globalList');
 function esc(s){return String(s??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;')}
@@ -278,37 +260,25 @@ function renderHotels(){const q=$('hotelSearch').value.trim().toLowerCase();let 
 async function copyHotelPhone(phone){let ok=false;try{await navigator.clipboard.writeText(phone);ok=true}catch(e){const box=document.createElement('textarea');box.value=phone;box.style.position='fixed';box.style.opacity='0';document.body.appendChild(box);box.select();try{ok=document.execCommand('copy')}catch(_){}box.remove()}const toast=$('hotelToast');toast.textContent=ok?'已複製電話 '+phone:'請長按電話號碼複製';toast.classList.add('show');clearTimeout(window.hotelToastTimer);window.hotelToastTimer=setTimeout(()=>toast.classList.remove('show'),1800)}
 $('hotelSearch').oninput=()=>{$('clearHotelSearch').style.display=$('hotelSearch').value?'block':'none';renderHotels()};$('clearHotelSearch').onclick=()=>{$('hotelSearch').value='';$('clearHotelSearch').style.display='none';renderHotels();$('hotelSearch').focus()};
 
-let activeCareArea='全部',activeCareType='全部';
+let activeCareArea='全部',activeCareTime='全部';
 function buildCareFilters(){
-  const areas=['全部','新竹市','竹北','竹東','湖口','新豐'];
-  const types=['全部','美容SPA','按摩舒壓','足體養生'];
-  $('careAreaFilters').innerHTML=areas.map(g=>`<button class="chip ${g===activeCareArea?'active':''}" data-area="${g}">${g}</button>`).join('');
-  $('careAreaFilters').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{activeCareArea=btn.dataset.area;buildCareFilters();renderCare()});
-  $('careTypeFilters').innerHTML=types.map(g=>`<button class="chip ${g===activeCareType?'active':''}" data-type="${g}">${g==='美容SPA'?'美容／SPA':g}</button>`).join('');
-  $('careTypeFilters').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{activeCareType=btn.dataset.type;buildCareFilters();renderCare()});
+ const areas=['全部','新竹市','新豐'], times=['全部','24H','夜間'];
+ $('careAreaFilters').innerHTML=areas.map(x=>`<button class="chip ${x===activeCareArea?'active':''}" data-area="${x}">${x}</button>`).join('');
+ $('careAreaFilters').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{activeCareArea=btn.dataset.area;buildCareFilters();renderCare()});
+ $('careTypeFilters').innerHTML=times.map(x=>`<button class="chip ${x===activeCareTime?'active':''}" data-time="${x}">${x==='全部'?'全部時段':x==='24H'?'24小時':'營業到凌晨'}</button>`).join('');
+ $('careTypeFilters').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{activeCareTime=btn.dataset.time;buildCareFilters();renderCare()});
 }
 function renderCare(){
-  const q=$('careSearch').value.trim().toLowerCase();
-  let list=careStores.filter(x=>(activeCareArea==='全部'||x.group===activeCareArea)&&(activeCareType==='全部'||x.type===activeCareType)).sort((a,b)=>{const priority=['Q18美容名店','真情美容名店'];const ai=priority.indexOf(a.name),bi=priority.indexOf(b.name);return (ai<0?99:ai)-(bi<0?99:bi)});
-  if(q)list=list.filter(x=>(x.name+' '+x.group+' '+x.area+' '+x.address+' '+x.phone+' '+x.type).toLowerCase().includes(q));
-  $('careResultCount').textContent=list.length+' 間';
-  $('careList').innerHTML=list.length?list.map((x,i)=>{
-    const tel=x.phone.replace(/[^0-9+]/g,'');
-    const map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.address);
-    return `<article class="hotel-card care-card"><div class="hotel-card-top"><div class="hotel-title-row"><div class="hotel-name">${esc(x.name)}</div><span class="hotel-area">${esc(x.group==='新竹市'?'新竹市'+x.area:x.area)}</span></div><div class="care-type-tag">🕒 24H・${esc(x.type==='美容SPA'?'美容／SPA':x.type)}</div><div class="hotel-address">📍 ${esc(x.address)}</div><div class="hotel-address">${esc(x.verification)}</div><a class="hotel-phone" href="tel:${tel}">${esc(x.phone)}</a></div><div class="hotel-actions"><a class="hotel-action call" href="tel:${tel}">📞 一鍵撥號</a><button class="hotel-action copy-phone" type="button" data-index="${i}">📋 複製電話</button><a class="hotel-action map" href="${map}" target="_blank" rel="noopener">🧭 導航</a></div></article>`;
-  }).join(''):'<div class="empty">找不到符合的護膚理容店家</div>';
-  $('careList').querySelectorAll('.copy-phone').forEach(btn=>btn.onclick=()=>copyHotelPhone(list[Number(btn.dataset.index)].phone));
-  renderLateNightCare(q);
-}
-function renderLateNightCare(q){
-  const list=lateNightCareStores.filter(x=>(activeCareArea==='全部'||x.group===activeCareArea)&&(activeCareType==='全部'||x.type===activeCareType)&&(!q||(x.name+' '+x.group+' '+x.area+' '+x.address+' '+x.phone+' '+x.type).toLowerCase().includes(q)));
-  $('lateNightCareSection').style.display=list.length?'block':'none';
-  $('lateNightCareList').innerHTML=list.map((x,i)=>{
-    const tel=x.phone.replace(/[^0-9+]/g,'');
-    const map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.address);
-    return `<article class="hotel-card care-card"><div class="hotel-card-top"><div class="hotel-title-row"><div class="hotel-name">${esc(x.name)}</div><span class="hotel-area">${esc(x.group==='新竹市'?'新竹市'+x.area:x.area)}</span></div><div class="care-type-tag">🌙 ${esc(x.hours)}・非24H</div><div class="hotel-address">📍 ${esc(x.address)}</div><div class="hotel-address">${esc(x.verification)}</div><a class="hotel-phone" href="tel:${tel}">${esc(x.phone)}</a></div><div class="hotel-actions"><a class="hotel-action call" href="tel:${tel}">📞 一鍵撥號</a><button class="hotel-action copy-phone" type="button" data-index="${i}">📋 複製電話</button><a class="hotel-action map" href="${map}" target="_blank" rel="noopener">🧭 導航</a></div></article>`;
-  }).join('');
-  $('lateNightCareList').querySelectorAll('.copy-phone').forEach(btn=>btn.onclick=()=>copyHotelPhone(list[Number(btn.dataset.index)].phone));
+ const q=$('careSearch').value.trim().toLowerCase();
+ let list=careStores.filter(x=>(activeCareArea==='全部'||x.group===activeCareArea)&&(activeCareTime==='全部'||x.timeType===activeCareTime));
+ if(q)list=list.filter(x=>(x.name+' '+x.group+' '+x.area+' '+x.address+' '+x.phone+' '+x.hours).toLowerCase().includes(q));
+ $('careResultCount').textContent=list.length+' 間';
+ $('careList').innerHTML=list.length?list.map((x,i)=>{
+  const tel=x.phone.replace(/[^0-9+]/g,'');
+  const map='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(x.name+' '+x.address);
+  return `<article class="hotel-card care-card"><div class="hotel-card-top"><div class="hotel-title-row"><div class="hotel-name">${esc(x.name)}</div><span class="hotel-area">${esc(x.group==='新竹市'?'新竹市'+x.area:x.area)}</span></div><div class="care-type-tag">🕒 ${esc(x.hours)}</div><div class="hotel-address">📍 ${esc(x.address)}</div><div class="hotel-address">${esc(x.verification)}・<a href="${esc(x.source)}" target="_blank" rel="noopener noreferrer">資料來源 ↗</a></div><a class="hotel-phone" href="tel:${tel}">${esc(x.phone)}</a></div><div class="hotel-actions"><a class="hotel-action call" href="tel:${tel}">📞 一鍵撥號</a><button class="hotel-action copy-phone" type="button" data-index="${i}">📋 複製電話</button><a class="hotel-action map" href="${map}" target="_blank" rel="noopener">🧭 導航</a></div></article>`;
+ }).join(''):'<div class="empty">找不到符合的夜間護膚理容店</div>';
+ $('careList').querySelectorAll('.copy-phone').forEach(btn=>btn.onclick=()=>copyHotelPhone(list[Number(btn.dataset.index)].phone));
 }
 $('careSearch').oninput=()=>{$('clearCareSearch').style.display=$('careSearch').value?'block':'none';renderCare()};
 $('clearCareSearch').onclick=()=>{$('careSearch').value='';$('clearCareSearch').style.display='none';renderCare();$('careSearch').focus()};
