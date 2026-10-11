@@ -180,18 +180,18 @@ body{margin:0;height:100%;display:flex;flex-direction:column;overflow:hidden;bac
   </div></div>
 </section>
 <section class="page" id="page-care">
-  <div class="card"><div class="head head-row"><span>💆 夜間護膚理容</span><span class="badge">10 間</span></div><div class="body">
-    <div class="hotel-alert"><span class="alert-ico">🌙</span><span>以Q18、真情、喜相逢這類美容護膚理容名店為主，包含24小時與營業到凌晨的店家。不是全部24H，搭車前請先電話確認。</span></div>
+  <div class="card"><div class="head head-row"><span>💆 夜間護膚理容</span><span class="badge">17 間</span></div><div class="body">
+    <div class="hotel-alert"><span class="alert-ico">🌙</span><span>以Q18、真情、喜相逢這類美容護膚理容名店為主，現已補上竹北店家。包含24小時與營業到凌晨的店家（非全部24H）；營業時間可能變動，載客前請先電話確認。</span></div>
     <div class="hotel-search"><input id="careSearch" type="search" inputmode="search" autocomplete="off" placeholder="搜尋Q18、真情、相逢、店名或地區"><button class="clear-btn" id="clearCareSearch">✕</button></div>
     <div class="searchhint">可以依地區、全天或深夜營業篩選，提供電話與導航。</div>
     <div class="filter-row" id="careAreaFilters"></div><div class="filter-row care-type-filters" id="careTypeFilters"></div>
-    <div class="list-tools"><span class="result-count" id="careResultCount">10 間</span></div>
+    <div class="list-tools"><span class="result-count" id="careResultCount">17 間</span></div>
     <div class="hotel-list" id="careList"></div>
-    <div class="hotel-source">資料核對：2026/10/11；依店家官網、商家地圖及商業登記整理。K7的公開時段資訊有差異；營業時間及接待狀況以店家電話回覆為準。目前僅列已找到足夠資訊的同類型店家。</div>
+    <div class="hotel-source">資料核對：2026/10/11；依店家官網、商家地圖及商業登記整理。K7的公開時段資訊有差異；營業時間及接待狀況以店家電話回覆為準。竹北新增7間，已排除商業登記為歇業的甜夜；24H與深夜營業時間均以店家最新回覆為準。</div>
   </div></div>
 </section>
 <section class="page" id="page-info">
-  <div class="stats"><div class="stat"><div class="l">資料版本</div><div class="v">115年9月</div></div><div class="stat"><div class="l">目的地</div><div class="v">586 筆</div></div><div class="stat"><div class="l">汽旅電話</div><div class="v">23 間</div></div><div class="stat"><div class="l">夜間護膚</div><div class="v">10 間</div></div></div>
+  <div class="stats"><div class="stat"><div class="l">資料版本</div><div class="v">115年9月</div></div><div class="stat"><div class="l">目的地</div><div class="v">586 筆</div></div><div class="stat"><div class="l">汽旅電話</div><div class="v">23 間</div></div><div class="stat"><div class="l">夜間護膚</div><div class="v">17 間</div></div></div>
   <section class="card"><div class="head">📄 工具資訊</div><div class="body tips">• 全部車資均為「竹東鎮出發」。<br>• 已依115年9月更新版 PDF 逐筆核對 586 筆。<br>• 可直接搜尋地名、區域及部分舊稱。<br>• 加價、轉點、超載等規則請查看「規則」分頁。<br>• 汽旅電話僅供快速聯絡，房況請以業者電話回覆為準。<br>• 夜間護膚理容收錄Q18、真情、喜相逢及同類型美容名店，時段分為24H與營業到凌晨。</div></section>
   <div class="footer">竹東計程車價目表｜汽旅電話版</div>
 </section>
@@ -239,6 +239,14 @@ const careStores=[
   {group:'新竹市',area:'東區',name:'艾菲爾精品美容',phone:'03-5322088',address:'新竹市東區民生路167號',hours:'12:00–翌日05:00',timeType:'夜間',verification:'店家網站公告營業時間',source:'https://hc035322088.weebly.com/38364260442510520497.html'},
   {group:'新竹市',area:'東區',name:'水悅時尚會館（原愛悅）',phone:'03-5312345',address:'新竹市東區民生路34號',hours:'24小時營業',timeType:'24H',verification:'公開商家資訊標示24H',source:'https://i-formosa.com/places/17504/'},
   {group:'新豐',area:'新豐鄉',name:'秘密Spa美容名店',phone:'03-5597997',address:'新竹縣新豐鄉新興路460號',hours:'13:00–翌日04:00',timeType:'夜間',verification:'公開商家資訊營業至凌晨04:00',source:'https://www.google.com/maps/search/?api=1&query=%E7%A7%98%E5%AF%86Spa%E7%BE%8E%E5%AE%B9%E5%90%8D%E5%BA%97'}
+,
+  {group:'竹北',area:'竹北市',name:'彩麗美容會館',phone:'03-6573868',address:'新竹縣竹北市縣政二路21號',hours:'10:00–翌日01:00（週日11:00起）',timeType:'夜間',verification:'公開商家與地圖資訊標示營業至01:00',source:'https://i-formosa.com/places/22798/'},
+  {group:'竹北',area:'竹北市',name:'漾時尚養生會館',phone:'03-6571837',address:'新竹縣竹北市光明六路303-21號',hours:'24小時營業（請先電話確認）',timeType:'24H',verification:'公開商家資料標示24H，商業登記目前為營業中',source:'https://a.i-formosa.com/places/24910/'},
+  {group:'竹北',area:'竹北市',name:'紅紅養身館',phone:'0910-004103',address:'新竹縣竹北市新工五路7號',hours:'24小時營業（請先電話確認）',timeType:'24H',verification:'公開商家資料標示全天營業',source:'https://i-formosa.com/places/21577/'},
+  {group:'竹北',area:'竹北市',name:'101 SPA養生館',phone:'03-5535101',address:'新竹縣竹北市環北路二段101號',hours:'24小時營業（請先電話確認）',timeType:'24H',verification:'公開商家資料標示全天營業',source:'https://i-formosa.com/places/22473/'},
+  {group:'竹北',area:'竹北市',name:'夏龍灣SPA會館',phone:'03-5523255',address:'新竹縣竹北市博愛街523-577號',hours:'24小時營業（請先電話確認）',timeType:'24H',verification:'商家地圖標示24H；門牌為資料來源的區間地址，出車前先確認入口',source:'https://www.elysianspa.care/spa/spa-zhubei-zhubei'},
+  {group:'竹北',area:'竹北市',name:'慕月SPA美學會館',phone:'03-6589819',address:'新竹縣竹北市東興路一段22號',hours:'10:00–翌日01:00',timeType:'夜間',verification:'店家官網公布營業時間',source:'https://www.mei6589819.com/'},
+  {group:'竹北',area:'竹北市',name:'朵莉SPA養生會館',phone:'03-5500768',address:'新竹縣竹北市六家五路一段213號1樓',hours:'10:00–翌日01:00',timeType:'夜間',verification:'店家官網公布營業時間',source:'https://www.dori035500768.com/'}
 ];
 let selectedKey=''; let activeRegion='全部';
 const $=id=>document.getElementById(id); const regionSelect=$('regionSelect'), destinationSelect=$('destinationSelect'), globalSearch=$('globalSearch'), globalList=$('globalList');
@@ -262,7 +270,7 @@ $('hotelSearch').oninput=()=>{$('clearHotelSearch').style.display=$('hotelSearch
 
 let activeCareArea='全部',activeCareTime='全部';
 function buildCareFilters(){
- const areas=['全部','新竹市','新豐'], times=['全部','24H','夜間'];
+ const areas=['全部','新竹市','竹北','新豐'], times=['全部','24H','夜間'];
  $('careAreaFilters').innerHTML=areas.map(x=>`<button class="chip ${x===activeCareArea?'active':''}" data-area="${x}">${x}</button>`).join('');
  $('careAreaFilters').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{activeCareArea=btn.dataset.area;buildCareFilters();renderCare()});
  $('careTypeFilters').innerHTML=times.map(x=>`<button class="chip ${x===activeCareTime?'active':''}" data-time="${x}">${x==='全部'?'全部時段':x==='24H'?'24小時':'營業到凌晨'}</button>`).join('');
