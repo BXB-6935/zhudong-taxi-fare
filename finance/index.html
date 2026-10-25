@@ -24,7 +24,7 @@ input,select{width:100%;border:1px solid #d9e1eb;background:#fff;border-radius:1
 .empty{text-align:center;color:#98a2b3;padding:22px 10px}
 .month-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.month-box{padding:12px;background:#f8fafc;border-radius:14px}.month-box span{font-size:12px;color:var(--muted)}.month-box strong{display:block;margin-top:5px;font-size:17px}
 .bar-wrap{margin-top:12px}.bar-row{display:grid;grid-template-columns:64px 1fr 76px;gap:8px;align-items:center;margin:8px 0;font-size:12px}.bar-bg{height:9px;background:#edf1f5;border-radius:999px;overflow:hidden}.bar{height:100%;border-radius:999px;background:#6d9cff}
-.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%) translateY(15px);background:#172033;color:#fff;padding:10px 14px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:50}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.upload-box{border:1px dashed #b8c6d8;border-radius:13px;padding:12px;background:#f8fafc}.upload-btn{display:block;text-align:center;padding:10px;border-radius:11px;background:#edf4ff;color:var(--blue);font-weight:800;cursor:pointer}.preview-one{margin-top:10px;position:relative;max-width:220px;border-radius:12px;overflow:hidden;background:#e9eef5}.preview-one img{display:block;width:100%;max-height:220px;object-fit:cover}.preview-one button{position:absolute;right:7px;top:7px;border:0;width:28px;height:28px;border-radius:50%;background:#000a;color:#fff;font-weight:900}.time-readonly{background:#f4f6f9!important;color:#64748b}.attach-btn{border:0;background:#edf4ff;color:var(--blue);border-radius:9px;padding:6px 9px;font-weight:700}.modal{display:none;position:fixed;inset:0;background:#000c;z-index:100;padding:24px 14px;overflow:auto}.modal.show{display:block}.modal-inner{max-width:720px;margin:auto}.modal-top{display:flex;justify-content:flex-end;margin-bottom:10px}.modal-top button{border:0;border-radius:999px;background:#fff;color:#111;padding:9px 13px;font-weight:800}.modal img{width:100%;max-height:80vh;object-fit:contain;background:#111;border-radius:14px}.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%) translateY(15px);background:#172033;color:#fff;padding:10px 14px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:50}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e7ebf0;display:grid;grid-template-columns:repeat(3,1fr);padding:7px 8px calc(7px + env(safe-area-inset-bottom));z-index:30}nav button{border:0;background:transparent;padding:7px 5px;color:#7a8494;font-weight:700}nav button.active{color:var(--blue)}nav span{display:block;font-size:20px;margin-bottom:2px}.view{display:none}.view.active{display:block}
 @media(max-width:560px){.summary{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.month-grid{grid-template-columns:1fr 1fr}}
 </style>
@@ -59,10 +59,18 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
       <input type="hidden" id="editId">
       <div class="form-grid">
         <div class="field"><label>日期</label><input type="date" id="date" required></div>
+        <div class="field"><label>登記時間</label><input type="text" id="registeredAtDisplay" class="time-readonly" readonly></div>
         <div class="field"><label>金額</label><input class="amount" type="number" id="amount" min="0" step="1" inputmode="numeric" placeholder="0" required></div>
         <div class="field"><label>分類</label><select id="category"></select></div>
         <div class="field"><label>帳戶</label><select id="account"><option>現金</option><option>銀行</option><option>信用卡</option><option>電子支付</option><option>其他</option></select></div>
         <div class="field full"><label>說明</label><input type="text" id="note" placeholder="例如：薪資、油錢、餐費、房租…"></div>
+        <div class="field full">
+          <label>收據／憑證照片（每筆 1 張）</label>
+          <div class="upload-box">
+            <label class="upload-btn">📷 拍照或選擇圖片<input type="file" id="imageInput" accept="image/*" hidden></label>
+            <div id="imagePreview" class="preview-one" style="display:none"></div>
+          </div>
+        </div>
       </div>
       <button class="primary" id="saveBtn" type="submit">儲存收入</button>
       <button class="secondary" id="cancelEdit" type="button" style="display:none;margin-top:8px">取消編輯</button>
@@ -126,9 +134,16 @@ nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid 
   <button data-view="stats"><span>📊</span>統計</button>
 </nav>
 <div id="toast" class="toast"></div>
+<div id="imageModal" class="modal">
+  <div class="modal-inner">
+    <div class="modal-top"><button type="button" id="closeImageModal">關閉</button></div>
+    <img id="modalImage" alt="收據或憑證">
+  </div>
+</div>
 
 <script>
 const KEY='personalFinanceLedgerV1';
+const DB_NAME='personalFinanceImagesV1', DB_STORE='images';
 const incomeCats=['薪資','獎金','兼職','營業收入','投資','退款','其他收入'];
 const expenseCats=['餐飲','交通','油錢','停車','購物','房租','水電','電話網路','娛樂','醫療','保險','稅費','人情','其他支出'];
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
@@ -138,8 +153,102 @@ const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]}}
 function save(rows){localStorage.setItem(KEY,JSON.stringify(rows))}
-function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1500)}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1600)}
+function fmtTime(v){
+  if(!v)return '-';
+  const d=new Date(v);
+  if(Number.isNaN(d.getTime()))return String(v);
+  return d.getFullYear()+'/'+pad(d.getMonth()+1)+'/'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+}
 function cats(type){return type==='income'?incomeCats:expenseCats}
+
+function openImageDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DB_NAME,1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE,{keyPath:'id'})};
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+async function putImage(id,dataUrl){
+  const db=await openImageDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(DB_STORE,'readwrite');
+    tx.objectStore(DB_STORE).put({id,dataUrl});
+    tx.oncomplete=()=>{db.close();resolve()};
+    tx.onerror=()=>{db.close();reject(tx.error)};
+  });
+}
+async function getImage(id){
+  const db=await openImageDB();
+  return new Promise((resolve,reject)=>{
+    const req=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).get(id);
+    req.onsuccess=()=>{db.close();resolve(req.result||null)};
+    req.onerror=()=>{db.close();reject(req.error)};
+  });
+}
+async function deleteImage(id){
+  const db=await openImageDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(DB_STORE,'readwrite');
+    tx.objectStore(DB_STORE).delete(id);
+    tx.oncomplete=()=>{db.close();resolve()};
+    tx.onerror=()=>{db.close();reject(tx.error)};
+  });
+}
+async function allImages(){
+  const db=await openImageDB();
+  return new Promise((resolve,reject)=>{
+    const req=db.transaction(DB_STORE,'readonly').objectStore(DB_STORE).getAll();
+    req.onsuccess=()=>{db.close();resolve(req.result||[])};
+    req.onerror=()=>{db.close();reject(req.error)};
+  });
+}
+async function clearImages(){
+  const db=await openImageDB();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(DB_STORE,'readwrite');
+    tx.objectStore(DB_STORE).clear();
+    tx.oncomplete=()=>{db.close();resolve()};
+    tx.onerror=()=>{db.close();reject(tx.error)};
+  });
+}
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(reader.error);
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error('圖片讀取失敗'));
+      img.onload=()=>{
+        const max=1600,scale=Math.min(1,max/Math.max(img.width,img.height));
+        const w=Math.max(1,Math.round(img.width*scale)),hh=Math.max(1,Math.round(img.height*scale));
+        const canvas=document.createElement('canvas');canvas.width=w;canvas.height=hh;
+        canvas.getContext('2d').drawImage(img,0,0,w,hh);
+        resolve(canvas.toDataURL('image/jpeg',0.82));
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+let pendingImageData=null;
+let removeExistingImage=false;
+
+function showPreview(dataUrl){
+  const box=$('#imagePreview');
+  if(!dataUrl){box.style.display='none';box.innerHTML='';return}
+  box.style.display='block';
+  box.innerHTML='<img src="'+dataUrl+'" alt="照片預覽"><button type="button" id="removeImageBtn">×</button>';
+  $('#removeImageBtn').onclick=()=>{
+    pendingImageData=null;
+    removeExistingImage=true;
+    $('#imageInput').value='';
+    showPreview(null);
+  };
+}
+
 function setType(type){
   $('#entryType').value=type;
   $('#incomeBtn').className=type==='income'?'active income':'';
@@ -154,22 +263,34 @@ function setType(type){
 function resetForm(){
   $('#editId').value='';
   $('#date').value=iso(new Date());
+  $('#registeredAtDisplay').value='儲存時自動記錄現在時間';
   $('#amount').value='';$('#note').value='';$('#account').value='現金';
+  $('#imageInput').value='';pendingImageData=null;removeExistingImage=false;showPreview(null);
   $('#cancelEdit').style.display='none';setType('income');
 }
-function saveEntry(e){
+async function saveEntry(e){
   e.preventDefault();
   const amount=Number($('#amount').value);
   if(!Number.isFinite(amount)||amount<=0){alert('請輸入金額');return}
   let rows=load();
   const id=$('#editId').value;
-  const rec={id:id||uid(),type:$('#entryType').value,date:$('#date').value,amount,category:$('#category').value,account:$('#account').value,note:$('#note').value.trim(),createdAt:new Date().toISOString()};
+  const old=id?rows.find(r=>r.id===id):null;
+  const recId=id||uid();
+  const createdAt=old?.createdAt||new Date().toISOString();
+  const hasImage=pendingImageData?true:(removeExistingImage?false:!!old?.hasImage);
+  const rec={
+    id:recId,type:$('#entryType').value,date:$('#date').value,amount,
+    category:$('#category').value,account:$('#account').value,note:$('#note').value.trim(),
+    createdAt,updatedAt:new Date().toISOString(),hasImage
+  };
+  if(pendingImageData)await putImage(recId,pendingImageData);
+  if(removeExistingImage)await deleteImage(recId);
   if(id)rows=rows.map(r=>r.id===id?{...r,...rec}:r);else rows.push(rec);
   save(rows);resetForm();render();toast(id?'已更新':'已儲存');
 }
 function render(){
   const rows=load();
-  const now=new Date(), m=iso(now).slice(0,7);
+  const now=new Date(),m=iso(now).slice(0,7);
   const mr=rows.filter(r=>r.date.startsWith(m));
   const inc=mr.filter(r=>r.type==='income').reduce((a,r)=>a+r.amount,0);
   const exp=mr.filter(r=>r.type==='expense').reduce((a,r)=>a+r.amount,0);
@@ -179,23 +300,24 @@ function render(){
 }
 function rowHtml(r){
   const sign=r.type==='income'?'+':'-';
-  return '<div class="item"><div class="ico '+(r.type==='income'?'in':'out')+'">'+(r.type==='income'?'收':'支')+'</div><div class="meta"><b>'+r.category+'</b><small>'+r.date+' ・ '+r.account+(r.note?' ・ '+r.note:'')+'</small></div><div class="money '+(r.type==='income'?'in':'out')+'">'+sign+money(r.amount)+'</div><div class="actions"><button onclick="editRec(\''+r.id+'\')">編輯</button><button onclick="delRec(\''+r.id+'\')">刪除</button></div></div>';
+  const att=r.hasImage?'<button class="attach-btn" onclick="viewImage(\''+r.id+'\')">📎 查看圖片</button>':'';
+  return '<div class="item"><div class="ico '+(r.type==='income'?'in':'out')+'">'+(r.type==='income'?'收':'支')+'</div><div class="meta"><b>'+r.category+'</b><small>'+r.date+' ・ '+r.account+(r.note?' ・ '+r.note:'')+'</small><small>登記：'+fmtTime(r.createdAt)+'</small></div><div class="money '+(r.type==='income'?'in':'out')+'">'+sign+money(r.amount)+'</div><div class="actions">'+att+'<button onclick="editRec(\''+r.id+'\')">編輯</button><button onclick="delRec(\''+r.id+'\')">刪除</button></div></div>';
 }
 function renderRecent(rows){
-  const r=[...rows].sort((a,b)=>(b.date+b.createdAt).localeCompare(a.date+a.createdAt)).slice(0,5);
+  const r=[...rows].sort((a,b)=>String(b.createdAt||b.date).localeCompare(String(a.createdAt||a.date))).slice(0,5);
   $('#recentList').innerHTML=r.length?r.map(rowHtml).join(''):'<div class="empty">尚無紀錄</div>';
 }
 let activeFilter='all';
 function filtered(rows){
   let out=[...rows];
-  const today=iso(new Date()), month=today.slice(0,7);
+  const today=iso(new Date()),month=today.slice(0,7);
   if(activeFilter==='income'||activeFilter==='expense')out=out.filter(r=>r.type===activeFilter);
   if(activeFilter==='month')out=out.filter(r=>r.date.startsWith(month));
   if(activeFilter==='today')out=out.filter(r=>r.date===today);
   const s=$('#filterStart').value,e=$('#filterEnd').value,q=$('#search').value.trim().toLowerCase();
   if(s)out=out.filter(r=>r.date>=s);if(e)out=out.filter(r=>r.date<=e);
-  if(q)out=out.filter(r=>(r.category+' '+r.account+' '+r.note).toLowerCase().includes(q));
-  return out.sort((a,b)=>(b.date+b.createdAt).localeCompare(a.date+a.createdAt));
+  if(q)out=out.filter(r=>(r.category+' '+r.account+' '+r.note+' '+fmtTime(r.createdAt)).toLowerCase().includes(q));
+  return out.sort((a,b)=>String(b.createdAt||b.date).localeCompare(String(a.createdAt||a.date)));
 }
 function renderList(rows){
   const out=filtered(rows);$('#countLabel').textContent=out.length+' 筆';
@@ -208,25 +330,71 @@ function renderStats(rows){
   const arr=Object.entries(map).sort((a,b)=>b[1]-a[1]),max=arr[0]?.[1]||1;
   $('#categoryBars').innerHTML=arr.length?arr.map(([n,v])=>'<div class="bar-row"><span>'+n+'</span><div class="bar-bg"><div class="bar" style="width:'+(v/max*100)+'%"></div></div><b>'+money(v).replace('NT$ ','')+'</b></div>').join(''):'<div class="empty">尚無支出資料</div>';
 }
-window.editRec=id=>{
+window.viewImage=async id=>{
+  const img=await getImage(id);
+  if(!img?.dataUrl){alert('找不到這張圖片');return}
+  $('#modalImage').src=img.dataUrl;$('#imageModal').classList.add('show');
+};
+window.editRec=async id=>{
   const r=load().find(x=>x.id===id);if(!r)return;
-  $('#editId').value=r.id;setType(r.type);$('#date').value=r.date;$('#amount').value=r.amount;$('#category').value=r.category;$('#account').value=r.account;$('#note').value=r.note||'';
+  $('#editId').value=r.id;setType(r.type);$('#date').value=r.date;$('#registeredAtDisplay').value=fmtTime(r.createdAt);
+  $('#amount').value=r.amount;$('#category').value=r.category;$('#account').value=r.account;$('#note').value=r.note||'';
+  pendingImageData=null;removeExistingImage=false;
+  if(r.hasImage){const img=await getImage(r.id);showPreview(img?.dataUrl||null)}else showPreview(null);
   $('#cancelEdit').style.display='block';switchView('home');window.scrollTo({top:0,behavior:'smooth'});
 };
-window.delRec=id=>{if(confirm('確定刪除這筆紀錄？')){save(load().filter(r=>r.id!==id));render();toast('已刪除')}};
-function switchView(v){$$('.view').forEach(x=>x.classList.remove('active'));$('#view-'+v).classList.add('active');$$('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));if(v==='list')renderList(load());if(v==='stats')renderStats(load())}
+window.delRec=async id=>{
+  if(!confirm('確定刪除這筆紀錄？'))return;
+  await deleteImage(id);save(load().filter(r=>r.id!==id));render();toast('已刪除');
+};
+function switchView(v){
+  $$('.view').forEach(x=>x.classList.remove('active'));$('#view-'+v).classList.add('active');
+  $$('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  if(v==='list')renderList(load());if(v==='stats')renderStats(load());
+}
 $$('nav button').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
-$('#goList').onclick=()=>switchView('list');$('#incomeBtn').onclick=()=>setType('income');$('#expenseBtn').onclick=()=>setType('expense');$('#entryForm').onsubmit=saveEntry;$('#cancelEdit').onclick=resetForm;
+$('#goList').onclick=()=>switchView('list');
+$('#incomeBtn').onclick=()=>setType('income');$('#expenseBtn').onclick=()=>setType('expense');
+$('#entryForm').onsubmit=saveEntry;$('#cancelEdit').onclick=resetForm;
+$('#imageInput').onchange=async e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  if(!file.type.startsWith('image/')){alert('請選擇圖片檔');return}
+  if(file.size>15*1024*1024){alert('圖片太大，請選擇 15MB 以下圖片');e.target.value='';return}
+  try{pendingImageData=await compressImage(file);removeExistingImage=false;showPreview(pendingImageData)}
+  catch(err){alert('圖片處理失敗')}
+};
+$('#closeImageModal').onclick=()=>$('#imageModal').classList.remove('show');
+$('#imageModal').onclick=e=>{if(e.target===$('#imageModal'))$('#imageModal').classList.remove('show')};
 $$('.quick-filter button').forEach(b=>b.onclick=()=>{activeFilter=b.dataset.filter;$$('.quick-filter button').forEach(x=>x.classList.toggle('active',x===b));renderList(load())});
 ['filterStart','filterEnd','search'].forEach(id=>$('#'+id).addEventListener('input',()=>renderList(load())));
 $('#exportCsv').onclick=()=>{
-  const rows=load().sort((a,b)=>a.date.localeCompare(b.date));
-  const csv=['日期,類型,金額,分類,帳戶,說明',...rows.map(r=>[r.date,r.type==='income'?'收入':'支出',r.amount,r.category,r.account,'\"'+(r.note||'').replaceAll('\"','\"\"')+'\"'].join(','))].join('\n');
+  const rows=load().sort((a,b)=>String(a.createdAt||a.date).localeCompare(String(b.createdAt||b.date)));
+  const csv=['日期,登記時間,類型,金額,分類,帳戶,說明,有無圖片',...rows.map(r=>[r.date,fmtTime(r.createdAt),r.type==='income'?'收入':'支出',r.amount,r.category,r.account,'"'+(r.note||'').replaceAll('"','""')+'"',r.hasImage?'有':'無'].join(','))].join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='收支記帳_'+iso(new Date())+'.csv';a.click();URL.revokeObjectURL(a.href);
 };
-$('#backupJson').onclick=()=>{const blob=new Blob([JSON.stringify({records:load(),exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='收支記帳備份_'+iso(new Date())+'.json';a.click();URL.revokeObjectURL(a.href)};
-$('#restoreJson').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!Array.isArray(d.records))throw 0;save(d.records);render();toast('備份已匯入')}catch(err){alert('備份格式錯誤')}};rd.readAsText(f)};
-$('#clearAll').onclick=()=>{if(confirm('確定清除全部收入與支出資料？此動作無法復原。')){localStorage.removeItem(KEY);render();toast('資料已清除')}};
+$('#backupJson').onclick=async()=>{
+  const images=await allImages();
+  const blob=new Blob([JSON.stringify({records:load(),images,exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='收支記帳備份_'+iso(new Date())+'.json';a.click();URL.revokeObjectURL(a.href);
+};
+$('#restoreJson').onchange=e=>{
+  const file=e.target.files[0];if(!file)return;
+  const rd=new FileReader();
+  rd.onload=async()=>{
+    try{
+      const d=JSON.parse(rd.result);if(!Array.isArray(d.records))throw 0;
+      save(d.records);await clearImages();
+      if(Array.isArray(d.images))for(const img of d.images){if(img?.id&&img?.dataUrl)await putImage(img.id,img.dataUrl)}
+      render();toast('備份已匯入');
+    }catch(err){alert('備份格式錯誤')}
+  };
+  rd.readAsText(file);
+};
+$('#clearAll').onclick=async()=>{
+  if(confirm('確定清除全部收入與支出資料？此動作無法復原。')){
+    localStorage.removeItem(KEY);await clearImages();render();toast('資料已清除');
+  }
+};
 resetForm();render();
 </script>
 </body>
