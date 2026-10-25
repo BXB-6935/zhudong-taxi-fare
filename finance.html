@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f2f5f">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>收入與支出記帳系統</title>
+<style>
+:root{--navy:#0f2f5f;--blue:#1769ff;--bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#718096;--line:#e6ebf2;--green:#12a66a;--red:#e34b4b;--orange:#f39b2f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;color:var(--text)}
+header{background:linear-gradient(135deg,#0f2f5f,#17477f);color:#fff;padding:18px 16px 20px;position:sticky;top:0;z-index:20;box-shadow:0 4px 20px #0f2f5f22}
+.header-row{max-width:880px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:10px}.brand h1{font-size:20px;margin:0 0 4px}.brand small{opacity:.82}
+.badge{font-size:11px;font-weight:800;padding:6px 9px;background:#ffffff18;border:1px solid #ffffff30;border-radius:999px;white-space:nowrap}
+main{max-width:880px;margin:auto;padding:14px 14px 90px}.card{background:var(--card);border-radius:18px;padding:15px;margin-bottom:12px;box-shadow:0 5px 22px #24476b12;border:1px solid #edf1f6}
+.section-title{display:flex;align-items:center;justify-content:space-between;font-weight:800;margin-bottom:12px}.section-title small{font-weight:600;color:var(--muted)}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sum{padding:13px;border-radius:15px;background:#f7f9fc}.sum span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.sum strong{font-size:18px}.sum.in strong{color:var(--green)}.sum.out strong{color:var(--red)}.sum.balance strong{color:var(--blue)}
+.segment{display:grid;grid-template-columns:1fr 1fr;background:#eef2f7;border-radius:14px;padding:4px;margin-bottom:12px}.segment button{border:0;background:transparent;padding:11px;border-radius:11px;font-weight:800;color:#667085}.segment button.active.income{background:#eaf9f2;color:var(--green)}.segment button.active.expense{background:#fff0f0;color:var(--red)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:700;color:#667085}
+input,select{width:100%;border:1px solid #d9e1eb;background:#fff;border-radius:12px;padding:12px 13px;font-size:16px;color:#172033;outline:none}input:focus,select:focus{border-color:#6aa0ff;box-shadow:0 0 0 3px #1769ff15}
+.amount{font-size:22px;font-weight:800}.primary{width:100%;border:0;border-radius:13px;padding:13px;font-size:16px;font-weight:800;color:#fff;background:var(--blue);margin-top:12px}.primary.expense{background:var(--red)}.secondary{width:100%;border:1px solid #dbe2ea;border-radius:13px;padding:11px;background:#fff;font-weight:700;color:#475467}
+.quick-filter{display:flex;gap:7px;overflow:auto;padding-bottom:3px}.quick-filter button{border:1px solid #dbe2ea;background:#fff;border-radius:999px;padding:8px 12px;font-weight:700;white-space:nowrap;color:#596273}.quick-filter button.active{background:#edf4ff;color:var(--blue);border-color:#bdd3ff}
+.list{display:flex;flex-direction:column;gap:8px}.item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:11px;border:1px solid #edf0f4;border-radius:14px}.ico{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900}.ico.in{background:#eaf9f2;color:var(--green)}.ico.out{background:#fff0f0;color:var(--red)}.meta b{display:block;font-size:14px}.meta small{display:block;color:var(--muted);margin-top:3px}.money{font-weight:900;text-align:right}.money.in{color:var(--green)}.money.out{color:var(--red)}.actions{grid-column:2/4;display:flex;gap:6px;justify-content:flex-end}.actions button{border:0;background:#f4f6f9;border-radius:9px;padding:6px 9px;color:#667085}
+.empty{text-align:center;color:#98a2b3;padding:22px 10px}
+.month-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.month-box{padding:12px;background:#f8fafc;border-radius:14px}.month-box span{font-size:12px;color:var(--muted)}.month-box strong{display:block;margin-top:5px;font-size:17px}
+.bar-wrap{margin-top:12px}.bar-row{display:grid;grid-template-columns:64px 1fr 76px;gap:8px;align-items:center;margin:8px 0;font-size:12px}.bar-bg{height:9px;background:#edf1f5;border-radius:999px;overflow:hidden}.bar{height:100%;border-radius:999px;background:#6d9cff}
+.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toast{position:fixed;left:50%;bottom:82px;transform:translateX(-50%) translateY(15px);background:#172033;color:#fff;padding:10px 14px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:50}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e7ebf0;display:grid;grid-template-columns:repeat(3,1fr);padding:7px 8px calc(7px + env(safe-area-inset-bottom));z-index:30}nav button{border:0;background:transparent;padding:7px 5px;color:#7a8494;font-weight:700}nav button.active{color:var(--blue)}nav span{display:block;font-size:20px;margin-bottom:2px}.view{display:none}.view.active{display:block}
+@media(max-width:560px){.summary{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.month-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-row">
+    <div class="brand"><h1>收入與支出記帳</h1><small>掌握現金流・每月收支・目前結餘</small></div>
+    <div class="badge">● 自動儲存</div>
+  </div>
+</header>
+
+<main>
+<section id="view-home" class="view active">
+  <div class="card">
+    <div class="section-title"><span>📊 本月總覽</span><small id="monthLabel"></small></div>
+    <div class="summary">
+      <div class="sum in"><span>本月收入</span><strong id="sumIncome">NT$ 0</strong></div>
+      <div class="sum out"><span>本月支出</span><strong id="sumExpense">NT$ 0</strong></div>
+      <div class="sum balance"><span>本月結餘</span><strong id="sumBalance">NT$ 0</strong></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title"><span>➕ 快速記一筆</span><small id="entryModeText">收入</small></div>
+    <form id="entryForm">
+      <div class="segment">
+        <button type="button" id="incomeBtn" class="active income">收入</button>
+        <button type="button" id="expenseBtn">支出</button>
+      </div>
+      <input type="hidden" id="entryType" value="income">
+      <input type="hidden" id="editId">
+      <div class="form-grid">
+        <div class="field"><label>日期</label><input type="date" id="date" required></div>
+        <div class="field"><label>金額</label><input class="amount" type="number" id="amount" min="0" step="1" inputmode="numeric" placeholder="0" required></div>
+        <div class="field"><label>分類</label><select id="category"></select></div>
+        <div class="field"><label>帳戶</label><select id="account"><option>現金</option><option>銀行</option><option>信用卡</option><option>電子支付</option><option>其他</option></select></div>
+        <div class="field full"><label>說明</label><input type="text" id="note" placeholder="例如：薪資、油錢、餐費、房租…"></div>
+      </div>
+      <button class="primary" id="saveBtn" type="submit">儲存收入</button>
+      <button class="secondary" id="cancelEdit" type="button" style="display:none;margin-top:8px">取消編輯</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="section-title"><span>🧾 最近紀錄</span><button class="secondary" id="goList" style="width:auto;padding:7px 10px">看全部</button></div>
+    <div id="recentList" class="list"></div>
+  </div>
+</section>
+
+<section id="view-list" class="view">
+  <div class="card">
+    <div class="section-title"><span>🔎 收支明細</span><small id="countLabel">0 筆</small></div>
+    <div class="quick-filter">
+      <button data-filter="all" class="active">全部</button>
+      <button data-filter="income">收入</button>
+      <button data-filter="expense">支出</button>
+      <button data-filter="month">本月</button>
+      <button data-filter="today">今天</button>
+    </div>
+    <div class="form-grid" style="margin-top:10px">
+      <div class="field"><label>開始日期</label><input type="date" id="filterStart"></div>
+      <div class="field"><label>結束日期</label><input type="date" id="filterEnd"></div>
+      <div class="field full"><label>關鍵字</label><input type="search" id="search" placeholder="搜尋分類／帳戶／說明"></div>
+    </div>
+  </div>
+  <div class="card"><div id="allList" class="list"></div></div>
+</section>
+
+<section id="view-stats" class="view">
+  <div class="card">
+    <div class="section-title"><span>📈 統計</span><small>全部資料</small></div>
+    <div class="month-grid">
+      <div class="month-box"><span>累計收入</span><strong id="allIncome">NT$ 0</strong></div>
+      <div class="month-box"><span>累計支出</span><strong id="allExpense">NT$ 0</strong></div>
+      <div class="month-box"><span>累計結餘</span><strong id="allBalance">NT$ 0</strong></div>
+      <div class="month-box"><span>總筆數</span><strong id="allCount">0</strong></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="section-title"><span>支出分類</span><small>依金額</small></div>
+    <div id="categoryBars" class="bar-wrap"></div>
+  </div>
+  <div class="card">
+    <div class="section-title"><span>⚙️ 資料工具</span></div>
+    <div class="toolbar">
+      <button class="secondary" id="exportCsv">匯出 CSV</button>
+      <button class="secondary" id="backupJson">備份 JSON</button>
+      <label class="secondary" style="text-align:center;cursor:pointer">匯入 JSON<input type="file" id="restoreJson" accept=".json,application/json" hidden></label>
+      <button class="secondary" id="clearAll" style="color:#d94646">清除全部資料</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<nav>
+  <button data-view="home" class="active"><span>🏠</span>首頁</button>
+  <button data-view="list"><span>🧾</span>明細</button>
+  <button data-view="stats"><span>📊</span>統計</button>
+</nav>
+<div id="toast" class="toast"></div>
+
+<script>
+const KEY='personalFinanceLedgerV1';
+const incomeCats=['薪資','獎金','兼職','營業收入','投資','退款','其他收入'];
+const expenseCats=['餐飲','交通','油錢','停車','購物','房租','水電','電話網路','娛樂','醫療','保險','稅費','人情','其他支出'];
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const money=n=>'NT$ '+Number(n||0).toLocaleString('zh-TW');
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]}}
+function save(rows){localStorage.setItem(KEY,JSON.stringify(rows))}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1500)}
+function cats(type){return type==='income'?incomeCats:expenseCats}
+function setType(type){
+  $('#entryType').value=type;
+  $('#incomeBtn').className=type==='income'?'active income':'';
+  $('#expenseBtn').className=type==='expense'?'active expense':'';
+  $('#entryModeText').textContent=type==='income'?'收入':'支出';
+  $('#saveBtn').textContent=$('#editId').value?'更新'+(type==='income'?'收入':'支出'):'儲存'+(type==='income'?'收入':'支出');
+  $('#saveBtn').className='primary'+(type==='expense'?' expense':'');
+  const cur=$('#category').value;
+  $('#category').innerHTML=cats(type).map(x=>'<option>'+x+'</option>').join('');
+  if(cats(type).includes(cur))$('#category').value=cur;
+}
+function resetForm(){
+  $('#editId').value='';
+  $('#date').value=iso(new Date());
+  $('#amount').value='';$('#note').value='';$('#account').value='現金';
+  $('#cancelEdit').style.display='none';setType('income');
+}
+function saveEntry(e){
+  e.preventDefault();
+  const amount=Number($('#amount').value);
+  if(!Number.isFinite(amount)||amount<=0){alert('請輸入金額');return}
+  let rows=load();
+  const id=$('#editId').value;
+  const rec={id:id||uid(),type:$('#entryType').value,date:$('#date').value,amount,category:$('#category').value,account:$('#account').value,note:$('#note').value.trim(),createdAt:new Date().toISOString()};
+  if(id)rows=rows.map(r=>r.id===id?{...r,...rec}:r);else rows.push(rec);
+  save(rows);resetForm();render();toast(id?'已更新':'已儲存');
+}
+function render(){
+  const rows=load();
+  const now=new Date(), m=iso(now).slice(0,7);
+  const mr=rows.filter(r=>r.date.startsWith(m));
+  const inc=mr.filter(r=>r.type==='income').reduce((a,r)=>a+r.amount,0);
+  const exp=mr.filter(r=>r.type==='expense').reduce((a,r)=>a+r.amount,0);
+  $('#monthLabel').textContent=now.getFullYear()+'年'+(now.getMonth()+1)+'月';
+  $('#sumIncome').textContent=money(inc);$('#sumExpense').textContent=money(exp);$('#sumBalance').textContent=money(inc-exp);
+  renderRecent(rows);renderList(rows);renderStats(rows);
+}
+function rowHtml(r){
+  const sign=r.type==='income'?'+':'-';
+  return '<div class="item"><div class="ico '+(r.type==='income'?'in':'out')+'">'+(r.type==='income'?'收':'支')+'</div><div class="meta"><b>'+r.category+'</b><small>'+r.date+' ・ '+r.account+(r.note?' ・ '+r.note:'')+'</small></div><div class="money '+(r.type==='income'?'in':'out')+'">'+sign+money(r.amount)+'</div><div class="actions"><button onclick="editRec(\''+r.id+'\')">編輯</button><button onclick="delRec(\''+r.id+'\')">刪除</button></div></div>';
+}
+function renderRecent(rows){
+  const r=[...rows].sort((a,b)=>(b.date+b.createdAt).localeCompare(a.date+a.createdAt)).slice(0,5);
+  $('#recentList').innerHTML=r.length?r.map(rowHtml).join(''):'<div class="empty">尚無紀錄</div>';
+}
+let activeFilter='all';
+function filtered(rows){
+  let out=[...rows];
+  const today=iso(new Date()), month=today.slice(0,7);
+  if(activeFilter==='income'||activeFilter==='expense')out=out.filter(r=>r.type===activeFilter);
+  if(activeFilter==='month')out=out.filter(r=>r.date.startsWith(month));
+  if(activeFilter==='today')out=out.filter(r=>r.date===today);
+  const s=$('#filterStart').value,e=$('#filterEnd').value,q=$('#search').value.trim().toLowerCase();
+  if(s)out=out.filter(r=>r.date>=s);if(e)out=out.filter(r=>r.date<=e);
+  if(q)out=out.filter(r=>(r.category+' '+r.account+' '+r.note).toLowerCase().includes(q));
+  return out.sort((a,b)=>(b.date+b.createdAt).localeCompare(a.date+a.createdAt));
+}
+function renderList(rows){
+  const out=filtered(rows);$('#countLabel').textContent=out.length+' 筆';
+  $('#allList').innerHTML=out.length?out.map(rowHtml).join(''):'<div class="empty">沒有符合的紀錄</div>';
+}
+function renderStats(rows){
+  const inc=rows.filter(r=>r.type==='income').reduce((a,r)=>a+r.amount,0),exp=rows.filter(r=>r.type==='expense').reduce((a,r)=>a+r.amount,0);
+  $('#allIncome').textContent=money(inc);$('#allExpense').textContent=money(exp);$('#allBalance').textContent=money(inc-exp);$('#allCount').textContent=rows.length;
+  const map={};rows.filter(r=>r.type==='expense').forEach(r=>map[r.category]=(map[r.category]||0)+r.amount);
+  const arr=Object.entries(map).sort((a,b)=>b[1]-a[1]),max=arr[0]?.[1]||1;
+  $('#categoryBars').innerHTML=arr.length?arr.map(([n,v])=>'<div class="bar-row"><span>'+n+'</span><div class="bar-bg"><div class="bar" style="width:'+(v/max*100)+'%"></div></div><b>'+money(v).replace('NT$ ','')+'</b></div>').join(''):'<div class="empty">尚無支出資料</div>';
+}
+window.editRec=id=>{
+  const r=load().find(x=>x.id===id);if(!r)return;
+  $('#editId').value=r.id;setType(r.type);$('#date').value=r.date;$('#amount').value=r.amount;$('#category').value=r.category;$('#account').value=r.account;$('#note').value=r.note||'';
+  $('#cancelEdit').style.display='block';switchView('home');window.scrollTo({top:0,behavior:'smooth'});
+};
+window.delRec=id=>{if(confirm('確定刪除這筆紀錄？')){save(load().filter(r=>r.id!==id));render();toast('已刪除')}};
+function switchView(v){$$('.view').forEach(x=>x.classList.remove('active'));$('#view-'+v).classList.add('active');$$('nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));if(v==='list')renderList(load());if(v==='stats')renderStats(load())}
+$$('nav button').forEach(b=>b.onclick=()=>switchView(b.dataset.view));
+$('#goList').onclick=()=>switchView('list');$('#incomeBtn').onclick=()=>setType('income');$('#expenseBtn').onclick=()=>setType('expense');$('#entryForm').onsubmit=saveEntry;$('#cancelEdit').onclick=resetForm;
+$$('.quick-filter button').forEach(b=>b.onclick=()=>{activeFilter=b.dataset.filter;$$('.quick-filter button').forEach(x=>x.classList.toggle('active',x===b));renderList(load())});
+['filterStart','filterEnd','search'].forEach(id=>$('#'+id).addEventListener('input',()=>renderList(load())));
+$('#exportCsv').onclick=()=>{
+  const rows=load().sort((a,b)=>a.date.localeCompare(b.date));
+  const csv=['日期,類型,金額,分類,帳戶,說明',...rows.map(r=>[r.date,r.type==='income'?'收入':'支出',r.amount,r.category,r.account,'\"'+(r.note||'').replaceAll('\"','\"\"')+'\"'].join(','))].join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='收支記帳_'+iso(new Date())+'.csv';a.click();URL.revokeObjectURL(a.href);
+};
+$('#backupJson').onclick=()=>{const blob=new Blob([JSON.stringify({records:load(),exportedAt:new Date().toISOString()},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='收支記帳備份_'+iso(new Date())+'.json';a.click();URL.revokeObjectURL(a.href)};
+$('#restoreJson').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!Array.isArray(d.records))throw 0;save(d.records);render();toast('備份已匯入')}catch(err){alert('備份格式錯誤')}};rd.readAsText(f)};
+$('#clearAll').onclick=()=>{if(confirm('確定清除全部收入與支出資料？此動作無法復原。')){localStorage.removeItem(KEY);render();toast('資料已清除')}};
+resetForm();render();
+</script>
+</body>
+</html>
