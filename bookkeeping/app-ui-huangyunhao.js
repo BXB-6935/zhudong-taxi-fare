@@ -152,7 +152,7 @@ function renderAllRecords(){
     <td>#${r.sequence||r._displaySeq||1}</td>
     <td>${r.pickup||'-'}</td>
     <td>${r.dropoff||'-'}</td>
-    <td>${money(r.revenue)}</td>
+    <td>${money(r.revenue)}${(+r.tip||0)>0?`<br><small>車資 ${money(r.fare ?? Math.max(0,(+r.revenue||0)-(+r.tip||0)))}＋小費 ${money(r.tip)}</small>`:''}</td>
     <td>${r.payment||'-'}</td>
     <td>${r.note||'-'}</td>
     <td class="action-cell"><button class="edit" onclick="editRecord('${r.id}')">編輯</button><button class="delete" onclick="deleteRecord('${r.id}')">刪除</button></td>
@@ -191,6 +191,7 @@ function clearForm(restoreSavedDraft=false){
   $('#fDateDisplay').value=fmtDate(day);
   const d=restoreSavedDraft?loadDraft():{};
   $('#fRevenue').value=d.revenue||'';
+  $('#fTip').value=d.tip||'';
   $('#fPayment').value=d.payment||'現金';
   $('#fPickup').value=d.pickup||'';
   $('#fDropoff').value=d.dropoff||'';
@@ -202,7 +203,8 @@ window.editRecord=function(id){
   $('#editId').value=r.id;
   $('#fDate').value=r.date;
   $('#fDateDisplay').value=fmtDate(r.date);
-  $('#fRevenue').value=r.revenue;
+  $('#fRevenue').value=r.fare ?? Math.max(0,(+r.revenue||0)-(+r.tip||0));
+  $('#fTip').value=r.tip||'';
   $('#fPayment').value=r.payment||'現金';
   $('#fPickup').value=r.pickup||'';
   $('#fDropoff').value=r.dropoff||'';
