@@ -91,6 +91,7 @@ function syncBusinessDayUI(){
 function saveDraft(){
   const data={
     revenue:$('#fRevenue')?.value||'',
+    tip:$('#fTip')?.value||'',
     payment:$('#fPayment')?.value||'現金',
     pickup:$('#fPickup')?.value||'',
     dropoff:$('#fDropoff')?.value||'',
