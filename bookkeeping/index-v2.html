@@ -479,6 +479,16 @@ function timeOnly(iso){
   const p=iso.split('T')[1]||'';
   return p.slice(0,5);
 }
+function businessTimeLabel(dateTime,businessDate){
+  if(!dateTime)return '-';
+  const actualDate=String(dateTime).split('T')[0]||businessDate;
+  const t=timeOnly(dateTime);
+  if(actualDate===businessDate)return t;
+  const diff=Math.round((parseISO(actualDate)-parseISO(businessDate))/86400000);
+  if(diff>0)return t+' (+'+diff+'日)';
+  if(diff<0)return t+' ('+diff+'日)';
+  return t;
+}
 function loadAppState(){
   try{return JSON.parse(localStorage.getItem(APP_STATE_KEY)||'{}')}catch(e){return{}}
 }
@@ -665,7 +675,7 @@ function renderKPIs(agg){
 function dailyRows(rows,sessions=[]){
   const map={};
   function ensure(date){
-    if(!map[date]) map[date]={date,revenue:0,hours:0,orders:0,mileage:0,punchIn:'-',punchOut:'-'};
+    if(!map[date]) map[date]={date,revenue:0,hours:0,orders:0,mileage:0,punchIn:'-',punchOut:'-',_punchInAt:null,_punchOutAt:null};
     return map[date];
   }
   rows.forEach(r=>{
@@ -675,8 +685,14 @@ function dailyRows(rows,sessions=[]){
   });
   sessions.forEach(s=>{
     const x=ensure(s.date);
-    if(x.punchIn==='-' || (s.startAt && timeOnly(s.startAt)<x.punchIn)) x.punchIn=timeOnly(s.startAt);
-    if(s.endAt && (x.punchOut==='-' || timeOnly(s.endAt)>x.punchOut)) x.punchOut=timeOnly(s.endAt);
+    if(s.startAt && (!x._punchInAt || s.startAt<x._punchInAt)){
+      x._punchInAt=s.startAt;
+      x.punchIn=businessTimeLabel(s.startAt,s.date);
+    }
+    if(s.endAt && (!x._punchOutAt || s.endAt>x._punchOutAt)){
+      x._punchOutAt=s.endAt;
+      x.punchOut=businessTimeLabel(s.endAt,s.date);
+    }
     if(s.endAt){
       const ms=new Date(s.endAt)-new Date(s.startAt);
       if(ms>0)x.hours += ms/3600000;
@@ -977,10 +993,10 @@ $('#saveCar').addEventListener('click',()=>{
 
 $('#sessionCsvBtn').addEventListener('click',()=>{
   const sessions=loadSessions().slice().sort((a,b)=>a.startAt.localeCompare(b.startAt));
-  const csv=['日期,進卡時間,進卡公里,出卡時間,出卡公里,工時小時,本次里程',...sessions.map(s=>{
+  const csv=['營業日,進卡日期時間,進卡公里,出卡日期時間,出卡公里,工時小時,本次里程',...sessions.map(s=>{
     const hours=s.endAt?Math.max(0,(new Date(s.endAt)-new Date(s.startAt))/3600000):'';
     const km=s.endAt?Math.max(0,(+s.endOdo||0)-(+s.startOdo||0)):'';
-    return [s.date,timeOnly(s.startAt),s.startOdo,timeOnly(s.endAt),s.endOdo??'',hours===''?'':hours.toFixed(2),km].join(',');
+    return [s.date,(s.startAt||'').replace('T',' '),s.startOdo,(s.endAt||'').replace('T',' '),s.endOdo??'',hours===''?'':hours.toFixed(2),km].join(',');
   })].join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`進出卡紀錄_${toISO(new Date())}.csv`;a.click();URL.revokeObjectURL(a.href);
