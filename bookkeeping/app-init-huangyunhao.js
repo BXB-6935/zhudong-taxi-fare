@@ -120,10 +120,10 @@ $('#saveCar').addEventListener('click',()=>{
 
 $('#sessionCsvBtn').addEventListener('click',()=>{
   const sessions=loadSessions().slice().sort((a,b)=>a.startAt.localeCompare(b.startAt));
-  const csv=['日期,進卡時間,進卡公里,出卡時間,出卡公里,工時小時,本次里程',...sessions.map(s=>{
+  const csv=['營業日,進卡日期時間,進卡公里,出卡日期時間,出卡公里,工時小時,本次里程',...sessions.map(s=>{
     const hours=s.endAt?Math.max(0,(new Date(s.endAt)-new Date(s.startAt))/3600000):'';
     const km=s.endAt?Math.max(0,(+s.endOdo||0)-(+s.startOdo||0)):'';
-    return [s.date,timeOnly(s.startAt),s.startOdo,timeOnly(s.endAt),s.endOdo??'',hours===''?'':hours.toFixed(2),km].join(',');
+    return [s.date,(s.startAt||'').replace('T',' '),s.startOdo,(s.endAt||'').replace('T',' '),s.endOdo??'',hours===''?'':hours.toFixed(2),km].join(',');
   })].join('\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`進出卡紀錄_${toISO(new Date())}.csv`;a.click();URL.revokeObjectURL(a.href);
