@@ -158,16 +158,16 @@
           <input type="text" id="fDateDisplay" disabled placeholder="完成上線進卡後自動帶入">
           <input type="hidden" id="fDate">
         </div>
+        <div class="field"><label>上車地點</label><input type="text" id="fPickup" placeholder="可不填"></div>
+        <div class="field"><label>下車地點</label><input type="text" id="fDropoff" placeholder="可不填"></div>
         <div class="field"><label>本筆營收（NT$）</label><input type="number" id="fRevenue" min="0" step="1" inputmode="numeric" placeholder="例如 280"></div>
-        <div class="field"><label>付款方式</label>
+        <div class="field"><label>收支方式</label>
           <select id="fPayment">
             <option value="現金">現金</option>
             <option value="記帳">記帳</option>
+            <option value="小費">小費</option>
           </select>
-          <small style="display:block;margin-top:5px;color:#94a3b8">付款別：現金／記帳</small>
         </div>
-        <div class="field"><label>上車地點</label><input type="text" id="fPickup" placeholder="可不填"></div>
-        <div class="field"><label>下車地點</label><input type="text" id="fDropoff" placeholder="可不填"></div>
         <div class="field full"><label>備註</label><input type="text" id="fNote" placeholder="可不填"></div>
       </div>
       <button type="submit" class="primary-btn" id="saveRecord">儲存紀錄</button>
