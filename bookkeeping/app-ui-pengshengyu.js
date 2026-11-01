@@ -23,7 +23,7 @@ function renderKPIs(agg){
 function dailyRows(rows,sessions=[]){
   const map={};
   function ensure(date){
-    if(!map[date]) map[date]={date,revenue:0,hours:0,orders:0,mileage:0,punchIn:'-',punchOut:'-'};
+    if(!map[date]) map[date]={date,revenue:0,hours:0,orders:0,mileage:0,punchIn:'-',punchOut:'-',_punchInAt:null,_punchOutAt:null};
     return map[date];
   }
   rows.forEach(r=>{
@@ -33,8 +33,14 @@ function dailyRows(rows,sessions=[]){
   });
   sessions.forEach(s=>{
     const x=ensure(s.date);
-    if(x.punchIn==='-' || (s.startAt && timeOnly(s.startAt)<x.punchIn)) x.punchIn=timeOnly(s.startAt);
-    if(s.endAt && (x.punchOut==='-' || timeOnly(s.endAt)>x.punchOut)) x.punchOut=timeOnly(s.endAt);
+    if(s.startAt && (!x._punchInAt || s.startAt<x._punchInAt)){
+      x._punchInAt=s.startAt;
+      x.punchIn=businessTimeLabel(s.startAt,s.date);
+    }
+    if(s.endAt && (!x._punchOutAt || s.endAt>x._punchOutAt)){
+      x._punchOutAt=s.endAt;
+      x.punchOut=businessTimeLabel(s.endAt,s.date);
+    }
     if(s.endAt){
       const ms=new Date(s.endAt)-new Date(s.startAt);
       if(ms>0)x.hours += ms/3600000;
