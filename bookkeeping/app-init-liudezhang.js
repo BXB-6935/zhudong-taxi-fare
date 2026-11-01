@@ -98,7 +98,7 @@ $('#recordDatePicker').addEventListener('change',()=>{
   renderPunch();
 });
 $$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
-['fRevenue','fPayment','fPickup','fDropoff','fNote'].forEach(id=>{
+['fRevenue','fTip','fPayment','fPickup','fDropoff','fNote'].forEach(id=>{
   const el=$('#'+id);
   if(el){
     el.addEventListener('input',saveDraft);
@@ -111,8 +111,11 @@ $('#saveRecord').addEventListener('click',()=>{
   const s=activeSession();
 
   const date=id && existing ? existing.date : (s?s.date:selectedBusinessDate());
-  const revenue=Number($('#fRevenue').value);
-  if(!Number.isFinite(revenue) || $('#fRevenue').value===''){alert('請輸入本筆營收金額。');$('#fRevenue').focus();return}
+  const fare=Number($('#fRevenue').value);
+  if(!Number.isFinite(fare) || $('#fRevenue').value===''){alert('請輸入車資金額。');$('#fRevenue').focus();return}
+  const tip=$('#fTip').value===''?0:Number($('#fTip').value);
+  if(!Number.isFinite(tip) || tip<0){alert('請確認小費金額。');$('#fTip').focus();return}
+  const revenue=fare+tip;
 
   const payment=$('#fPayment').value,pickup=$('#fPickup').value.trim(),dropoff=$('#fDropoff').value.trim(),note=$('#fNote').value.trim();
   let rows=loadRecords();
@@ -125,6 +128,8 @@ $('#saveRecord').addEventListener('click',()=>{
     sessionId:existing?.sessionId || s?.id || null,
     date,
     sequence,
+    fare,
+    tip,
     revenue,
     payment,
     pickup,
@@ -185,8 +190,8 @@ $('#restoreInput').addEventListener('change',e=>{
 });
 $('#exportBtn').addEventListener('click',()=>{
   const rows=loadRecords().filter(r=>inRange(r,currentStart,currentEnd)).sort((a,b)=>a.date.localeCompare(b.date));
-  const csv=['日期,序號,上車地點,下車地點,營收,付款方式,備註',...rows.map(r=>[
-    r.date,r.sequence||'',`"${(r.pickup||'').replaceAll('"','""')}"`,`"${(r.dropoff||'').replaceAll('"','""')}"`,r.revenue,r.payment||'',`"${(r.note||'').replaceAll('"','""')}"`
+  const csv=['日期,序號,上車地點,下車地點,車資,小費,總營收,付款方式,備註',...rows.map(r=>[
+    r.date,r.sequence||'',`"${(r.pickup||'').replaceAll('"','""')}"`,`"${(r.dropoff||'').replaceAll('"','""')}"`,r.fare ?? Math.max(0,(+r.revenue||0)-(+r.tip||0)),r.tip||0,r.revenue,r.payment||'',`"${(r.note||'').replaceAll('"','""')}"`
   ].join(','))].join('\\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`記帳_${currentStart}_${currentEnd}.csv`;a.click();URL.revokeObjectURL(a.href);
