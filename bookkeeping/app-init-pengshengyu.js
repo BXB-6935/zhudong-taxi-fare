@@ -105,40 +105,6 @@ $$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.vi
     el.addEventListener('change',saveDraft);
   }
 });
-$('#saveRecord').addEventListener('click',()=>{
-  const id=$('#editId').value;
-  const existing=id?loadRecords().find(r=>r.id===id):null;
-  const s=activeSession();
-
-  const date=id && existing ? existing.date : (s?s.date:selectedBusinessDate());
-  const fare=Number($('#fRevenue').value);
-  if(!Number.isFinite(fare) || $('#fRevenue').value===''){alert('請輸入車資金額。');$('#fRevenue').focus();return}
-  const tip=$('#fTip').value===''?0:Number($('#fTip').value);
-  if(!Number.isFinite(tip) || tip<0){alert('請確認小費金額。');$('#fTip').focus();return}
-  const revenue=fare+tip;
-
-  const payment=$('#fPayment').value,pickup=$('#fPickup').value.trim(),dropoff=$('#fDropoff').value.trim(),note=$('#fNote').value.trim();
-  let rows=loadRecords();
-  let sequence=existing?.sequence;
-  if(!sequence){
-    sequence=rows.filter(r=>r.date===date).length+1;
-  }
-  const rec={
-    id:id||uid(),
-    sessionId:existing?.sessionId || s?.id || null,
-    date,
-    sequence,
-    fare,
-    tip,
-    revenue,
-    payment,
-    pickup,
-    dropoff,
-    note
-  };
-  if(id)rows=rows.map(r=>r.id===id?rec:r);else rows.push(rec);
-  saveRecords(rows);saveAppState({recordDate:date});clearForm();renderAll();renderPunch();syncBusinessDayUI();toast(id?'已更新這一筆':'已新增一筆營收');
-});
 $('#cancelEdit').addEventListener('click',clearForm);
 $('#punchInBtn').addEventListener('click',punchIn);
 $('#punchOutBtn').addEventListener('click',punchOut);
