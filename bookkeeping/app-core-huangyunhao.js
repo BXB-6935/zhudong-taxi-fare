@@ -35,6 +35,16 @@ function timeOnly(iso){
   const p=iso.split('T')[1]||'';
   return p.slice(0,5);
 }
+function businessTimeLabel(dateTime,businessDate){
+  if(!dateTime)return '-';
+  const actualDate=String(dateTime).split('T')[0]||businessDate;
+  const t=timeOnly(dateTime);
+  if(actualDate===businessDate)return t;
+  const diff=Math.round((parseISO(actualDate)-parseISO(businessDate))/86400000);
+  if(diff>0)return t+' (+'+diff+'日)';
+  if(diff<0)return t+' ('+diff+'日)';
+  return t;
+}
 function loadAppState(){
   try{return JSON.parse(localStorage.getItem(APP_STATE_KEY)||'{}')}catch(e){return{}}
 }
