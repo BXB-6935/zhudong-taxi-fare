@@ -160,12 +160,12 @@
         </div>
         <div class="field"><label>上車地點</label><input type="text" id="fPickup" placeholder="可不填"></div>
         <div class="field"><label>下車地點</label><input type="text" id="fDropoff" placeholder="可不填"></div>
-        <div class="field"><label>本筆營收（NT$）</label><input type="number" id="fRevenue" min="0" step="1" inputmode="numeric" placeholder="例如 280"></div>
+        <div class="field"><label>車資金額（NT$）</label><input type="number" id="fRevenue" min="0" step="1" inputmode="numeric" placeholder="例如 280"></div>
+        <div class="field"><label>小費（NT$）</label><input type="number" id="fTip" min="0" step="1" inputmode="numeric" placeholder="例如 50，可不填"></div>
         <div class="field"><label>收支方式</label>
           <select id="fPayment">
             <option value="現金">現金</option>
             <option value="記帳">記帳</option>
-            <option value="小費">小費</option>
           </select>
         </div>
         <div class="field full"><label>備註</label><input type="text" id="fNote" placeholder="可不填"></div>
@@ -262,7 +262,7 @@ function safeRenderRecordDay(date){
         '<td>#'+safeEsc(r.sequence||1)+'</td>'+
         '<td>'+safeEsc(r.pickup||'-')+'</td>'+
         '<td>'+safeEsc(r.dropoff||'-')+'</td>'+
-        '<td>NT$ '+Number(r.revenue||0).toLocaleString('zh-TW')+'</td>'+
+        '<td>NT$ '+Number(r.revenue||0).toLocaleString('zh-TW')+(Number(r.tip||0)>0?'<br><small>車資 '+Number(r.fare??Math.max(0,(+r.revenue||0)-(+r.tip||0))).toLocaleString('zh-TW')+'＋小費 '+Number(r.tip||0).toLocaleString('zh-TW')+'</small>':'')+'</td>'+
         '<td>'+safeEsc(r.payment||'-')+'</td>'+
         '<td>'+safeEsc(r.note||'-')+'</td>'+
         '<td class="action-cell"></td></tr>').join('')
@@ -307,13 +307,23 @@ function safeSaveRecord(event){
   }
   try{
     const revenueEl=document.getElementById('fRevenue');
-    const revenue=Number(revenueEl?.value);
-    if(!Number.isFinite(revenue) || revenueEl?.value===''){
-      if(status){status.textContent='請輸入本筆營收金額';status.style.color='#d94646';}
-      alert('請輸入本筆營收金額。');
+    const fare=Number(revenueEl?.value);
+    if(!Number.isFinite(fare) || revenueEl?.value===''){
+      if(status){status.textContent='請輸入車資金額';status.style.color='#d94646';}
+      alert('請輸入車資金額。');
       revenueEl?.focus();
       return false;
     }
+    const tipEl=document.getElementById('fTip');
+    const tipRaw=tipEl?.value ?? '';
+    const tip=tipRaw===''?0:Number(tipRaw);
+    if(!Number.isFinite(tip) || tip<0){
+      if(status){status.textContent='請確認小費金額';status.style.color='#d94646';}
+      alert('請確認小費金額。');
+      tipEl?.focus();
+      return false;
+    }
+    const revenue=fare+tip;
 
     const recordsKey='ajieBookkeepingRecordsV1';
     const sessionsKey='ajieBookkeepingSessionsV1';
@@ -345,6 +355,8 @@ function safeSaveRecord(event){
       sessionId:existing?.sessionId || active?.id || null,
       date,
       sequence,
+      fare,
+      tip,
       revenue,
       payment,
       pickup,
@@ -363,6 +375,7 @@ function safeSaveRecord(event){
     if(typeof clearDraft==='function') clearDraft();
     if(document.getElementById('editId')) document.getElementById('editId').value='';
     if(revenueEl) revenueEl.value='';
+    if(document.getElementById('fTip')) document.getElementById('fTip').value='';
     if(document.getElementById('fPickup')) document.getElementById('fPickup').value='';
     if(document.getElementById('fDropoff')) document.getElementById('fDropoff').value='';
     if(document.getElementById('fNote')) document.getElementById('fNote').value='';
@@ -521,6 +534,7 @@ function syncBusinessDayUI(){
 function saveDraft(){
   const data={
     revenue:$('#fRevenue')?.value||'',
+    tip:$('#fTip')?.value||'',
     payment:$('#fPayment')?.value||'現金',
     pickup:$('#fPickup')?.value||'',
     dropoff:$('#fDropoff')?.value||'',
@@ -779,7 +793,7 @@ function renderAllRecords(){
     <td>#${r.sequence||r._displaySeq||1}</td>
     <td>${r.pickup||'-'}</td>
     <td>${r.dropoff||'-'}</td>
-    <td>${money(r.revenue)}</td>
+    <td>${money(r.revenue)}${(+r.tip||0)>0?`<br><small>車資 ${money(r.fare ?? Math.max(0,(+r.revenue||0)-(+r.tip||0)))}＋小費 ${money(r.tip)}</small>`:''}</td>
     <td>${r.payment||'-'}</td>
     <td>${r.note||'-'}</td>
     <td class="action-cell"><button class="edit" onclick="editRecord('${r.id}')">編輯</button><button class="delete" onclick="deleteRecord('${r.id}')">刪除</button></td>
@@ -818,6 +832,7 @@ function clearForm(restoreSavedDraft=false){
   $('#fDateDisplay').value=fmtDate(day);
   const d=restoreSavedDraft?loadDraft():{};
   $('#fRevenue').value=d.revenue||'';
+  $('#fTip').value=d.tip||'';
   $('#fPayment').value=d.payment||'現金';
   $('#fPickup').value=d.pickup||'';
   $('#fDropoff').value=d.dropoff||'';
@@ -829,7 +844,8 @@ window.editRecord=function(id){
   $('#editId').value=r.id;
   $('#fDate').value=r.date;
   $('#fDateDisplay').value=fmtDate(r.date);
-  $('#fRevenue').value=r.revenue;
+  $('#fRevenue').value=r.fare ?? Math.max(0,(+r.revenue||0)-(+r.tip||0));
+  $('#fTip').value=r.tip||'';
   $('#fPayment').value=r.payment||'現金';
   $('#fPickup').value=r.pickup||'';
   $('#fDropoff').value=r.dropoff||'';
@@ -938,7 +954,7 @@ $('#recordDatePicker').addEventListener('change',()=>{
   renderPunch();
 });
 $$('.nav-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
-['fRevenue','fPayment','fPickup','fDropoff','fNote'].forEach(id=>{
+['fRevenue','fTip','fPayment','fPickup','fDropoff','fNote'].forEach(id=>{
   const el=$('#'+id);
   if(el){
     el.addEventListener('input',saveDraft);
@@ -996,8 +1012,8 @@ $('#restoreInput').addEventListener('change',e=>{
 });
 $('#exportBtn').addEventListener('click',()=>{
   const rows=loadRecords().filter(r=>inRange(r,currentStart,currentEnd)).sort((a,b)=>a.date.localeCompare(b.date));
-  const csv=['日期,序號,上車地點,下車地點,營收,付款方式,備註',...rows.map(r=>[
-    r.date,r.sequence||'',`"${(r.pickup||'').replaceAll('"','""')}"`,`"${(r.dropoff||'').replaceAll('"','""')}"`,r.revenue,r.payment||'',`"${(r.note||'').replaceAll('"','""')}"`
+  const csv=['日期,序號,上車地點,下車地點,車資,小費,總營收,付款方式,備註',...rows.map(r=>[
+    r.date,r.sequence||'',`"${(r.pickup||'').replaceAll('"','""')}"`,`"${(r.dropoff||'').replaceAll('"','""')}"`,r.fare ?? Math.max(0,(+r.revenue||0)-(+r.tip||0)),r.tip||0,r.revenue,r.payment||'',`"${(r.note||'').replaceAll('"','""')}"`
   ].join(','))].join('\\n');
   const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`記帳_${currentStart}_${currentEnd}.csv`;a.click();URL.revokeObjectURL(a.href);
