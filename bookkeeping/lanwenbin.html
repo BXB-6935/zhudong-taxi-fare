@@ -825,6 +825,18 @@ function renderDetail(rows){
     const ph=(+r.hours||0)?(+r.fareRevenue||0)/(+r.hours):0;
     return `<tr><td>${fmtDate(r.date)}</td><td>${r.punchIn||'-'}</td><td>${r.punchOut||'-'}</td><td>${money(r.fareRevenue)}</td><td>${money(r.tipRevenue)}</td><td>${money(r.revenue)}</td><td>${num(r.hours)}</td><td>${num(r.orders,0)}</td><td>${num(r.mileage)}</td><td>${money(avg)}</td><td>${money(ph)}</td></tr>`
   }).join(''):`<tr><td colspan="11" class="empty">沒有資料</td></tr>`;
+  const fareTotal=rows.reduce((a,r)=>a+(+r.fareRevenue||0),0);
+  const tipTotal=rows.reduce((a,r)=>a+(+r.tipRevenue||0),0);
+  const incomeTotal=fareTotal+tipTotal;
+  const hoursTotal=rows.reduce((a,r)=>a+(+r.hours||0),0);
+  const ordersTotal=rows.reduce((a,r)=>a+(+r.orders||0),0);
+  const mileageTotal=rows.reduce((a,r)=>a+(+r.mileage||0),0);
+  if($('#detailFareTotal')) $('#detailFareTotal').textContent=money(fareTotal);
+  if($('#detailTipTotal')) $('#detailTipTotal').textContent=money(tipTotal);
+  if($('#detailIncomeTotal')) $('#detailIncomeTotal').textContent=money(incomeTotal);
+  if($('#detailHoursTotal')) $('#detailHoursTotal').textContent=num(hoursTotal)+' 小時';
+  if($('#detailOrdersTotal')) $('#detailOrdersTotal').textContent=num(ordersTotal,0)+' 單';
+  if($('#detailMileageTotal')) $('#detailMileageTotal').textContent=num(mileageTotal)+' km';
 }
 function renderHome(){
   if(!currentStart||!currentEnd){const r=getRangePreset('7d');currentStart=r[0];currentEnd=r[1];$('#startDate').value=r[0];$('#endDate').value=r[1]}
