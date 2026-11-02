@@ -166,11 +166,13 @@ function renderAllRecords(){
     <td>#${r.sequence||r._displaySeq||1}</td>
     <td>${r.pickup||'-'}</td>
     <td>${r.dropoff||'-'}</td>
-    <td>${money(r.revenue)}${(+r.tip||0)>0?`<br><small>車資 ${money(r.fare ?? Math.max(0,(+r.revenue||0)-(+r.tip||0)))}＋小費 ${money(r.tip)}</small>`:''}</td>
+    <td>${money(r.fare ?? Math.max(0,(+r.revenue||0)-(+r.tip||0)))}</td>
+    <td>${money(r.tip||0)}</td>
+    <td>${money(r.revenue)}</td>
     <td>${r.payment||'-'}</td>
     <td>${r.note||'-'}</td>
     <td class="action-cell"><button class="edit" onclick="editRecord('${r.id}')">編輯</button><button class="delete" onclick="deleteRecord('${r.id}')">刪除</button></td>
-  </tr>`).join(''):`<tr><td colspan="8" class="empty">尚無紀錄</td></tr>`;
+  </tr>`).join(''):`<tr><td colspan="10" class="empty">尚無紀錄</td></tr>`;
 }
 function renderStats(){
   const rows=loadRecords(), sessions=loadSessions();
