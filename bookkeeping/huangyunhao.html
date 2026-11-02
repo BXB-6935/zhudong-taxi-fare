@@ -68,8 +68,13 @@
     </div>
 
     <div class="card chart-card">
-      <div class="section-title"><span>📊 每日營收趨勢</span><small>NT$</small></div>
+      <div class="section-title"><span>🚕 每日純跑車營收</span><small>NT$</small></div>
       <div id="revenueChart"></div>
+    </div>
+
+    <div class="card chart-card">
+      <div class="section-title"><span>💰 每日小費收入</span><small>NT$</small></div>
+      <div id="tipChart"></div>
     </div>
 
     <div class="card chart-card">
@@ -97,7 +102,7 @@
         <table>
           <thead>
             <tr>
-              <th>日期</th><th>進卡</th><th>出卡</th><th>營收</th><th>工時</th><th>單數</th><th>里程</th><th>平均客單</th><th>時薪</th>
+              <th>日期</th><th>進卡</th><th>出卡</th><th>純車資</th><th>小費</th><th>合計</th><th>工時</th><th>單數</th><th>里程</th><th>平均車資</th><th>每小時車資</th>
             </tr>
           </thead>
           <tbody id="detailBody"></tbody>
@@ -193,7 +198,8 @@
       <div class="section-title"><span>📊 統計總覽</span></div>
       <div id="statsSummary"></div>
     </div>
-    <div class="card chart-card"><div class="section-title"><span>每月營收</span></div><div id="monthlyChart"></div></div>
+    <div class="card chart-card"><div class="section-title"><span>每月純跑車營收</span></div><div id="monthlyChart"></div></div>
+    <div class="card chart-card"><div class="section-title"><span>每月小費收入</span></div><div id="tipMonthlyChart"></div></div>
   </section>
 
   <section id="view-car" class="view">
