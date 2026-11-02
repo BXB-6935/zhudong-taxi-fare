@@ -9,7 +9,7 @@
 <meta http-equiv="Expires" content="0" />
 <title>曾建民｜記帳儀表板</title>
 <link rel="stylesheet" href="style.css">
-<meta name="app-build" content="20261102-1415" />
+<meta name="app-build" content="20261102-1425" />
 </head>
 <body>
 <header class="header">
@@ -1282,7 +1282,8 @@ renderPunch();
         setStatus('出卡公里數不可小於進卡公里數。',true);
         return;
       }
-      var endDate=(et<=st)?ymdNext(date):date;
+      if(et===st){setStatus('進卡與出卡時間不能相同，請確認實際時間。',true);return}
+      var endDate=(et<st)?ymdNext(date):date;
       var startAt=date+'T'+st+':00';
       var endAt=endDate+'T'+et+':00';
       var sessions=typeof loadSessions==='function'?loadSessions():[];
