@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<meta name="app-build" content="20261102-1415" />
+<meta name="app-build" content="20261102-1425" />
 <title>劉德彰｜記帳儀表板</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -609,7 +609,8 @@ function safeSwitchView(name){
         setStatus('出卡公里數不可小於進卡公里數。',true);
         return;
       }
-      var endDate=(et<=st)?ymdNext(date):date;
+      if(et===st){setStatus('進卡與出卡時間不能相同，請確認實際時間。',true);return}
+      var endDate=(et<st)?ymdNext(date):date;
       var startAt=date+'T'+st+':00';
       var endAt=endDate+'T'+et+':00';
       var sessions=typeof loadSessions==='function'?loadSessions():[];
