@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<meta name="app-build" content="20261102-1348" />
+<meta name="app-build" content="20261102-1405" />
 <title>黃耘浩｜記帳儀表板</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -228,6 +228,37 @@
   </section>
 
   <section id="view-settings" class="view">
+    <div class="card" data-manual-session-correction>
+      <div class="section-title"><span>🕒 補登／修正上下線</span></div>
+      <p class="summary-note">忘記進卡或出卡時，可在這裡補登。若該營業日已有「未出卡」紀錄，系統會優先修正該筆，不會重複計算工時。</p>
+      <button type="button" class="secondary-btn" id="loadOpenSessionBtn" style="margin-bottom:10px">載入目前未出卡紀錄</button>
+      <input type="hidden" id="manualSessionId">
+      <div class="form-grid">
+        <div class="field full">
+          <label>營業日期</label>
+          <input type="date" id="manualSessionDate">
+        </div>
+        <div class="field">
+          <label>進卡時間</label>
+          <input type="time" id="manualStartTime">
+        </div>
+        <div class="field">
+          <label>進卡公里數</label>
+          <input type="number" id="manualStartOdo" min="0" step="0.1" inputmode="decimal" placeholder="例如 125430.5">
+        </div>
+        <div class="field">
+          <label>出卡時間</label>
+          <input type="time" id="manualEndTime">
+        </div>
+        <div class="field">
+          <label>出卡公里數</label>
+          <input type="number" id="manualEndOdo" min="0" step="0.1" inputmode="decimal" placeholder="例如 125568.2">
+        </div>
+      </div>
+      <p class="summary-note">若出卡時間早於進卡時間，例如 21:00 → 03:00，系統會自動視為隔日 03:00。</p>
+      <button type="button" class="primary-btn" id="saveManualSessionBtn">儲存補登／修正</button>
+      <div id="manualSessionStatus" class="summary-note" style="text-align:center;min-height:18px;margin-top:8px"></div>
+    </div>
     <div class="card">
       <div class="section-title"><span>⚙️ 設定</span></div>
       <button class="secondary-btn" id="seedBtn">載入示範資料</button>
@@ -490,6 +521,111 @@ function safeSwitchView(name){
   window.addEventListener('pageshow',syncGlobalOnlineBadge);
   window.addEventListener('storage',syncGlobalOnlineBadge);
   setInterval(syncGlobalOnlineBadge,1000);
+})();
+</script>
+
+<script data-manual-session-correction-script>
+(function(){
+  function el(id){return document.getElementById(id)}
+  function ymdNext(dateStr){
+    var d=new Date(dateStr+'T12:00:00');
+    d.setDate(d.getDate()+1);
+    var p=function(n){return String(n).padStart(2,'0')};
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+  }
+  function setStatus(msg,bad){
+    var s=el('manualSessionStatus');
+    if(!s)return;
+    s.textContent=msg||'';
+    s.style.color=bad?'#d94646':'#0d9d63';
+  }
+  function defaultManualDate(){
+    var d=el('manualSessionDate');
+    if(d && !d.value){
+      try{
+        var a=typeof activeSession==='function'?activeSession():null;
+        d.value=a&&a.date?a.date:(typeof toISO==='function'?toISO(new Date()):new Date().toISOString().slice(0,10));
+      }catch(e){d.value=new Date().toISOString().slice(0,10)}
+    }
+  }
+  function loadOpenSession(){
+    try{
+      var sessions=typeof loadSessions==='function'?loadSessions():[];
+      var s=sessions.find(function(x){return !x.endAt});
+      if(!s){
+        setStatus('目前沒有未出卡紀錄。',true);
+        return;
+      }
+      el('manualSessionId').value=s.id||'';
+      el('manualSessionDate').value=s.date||String(s.startAt||'').slice(0,10);
+      el('manualStartTime').value=String(s.startAt||'').split('T')[1]?.slice(0,5)||'';
+      el('manualStartOdo').value=s.startOdo??'';
+      el('manualEndTime').value='';
+      el('manualEndOdo').value='';
+      setStatus('已載入未出卡紀錄，請補上實際出卡時間與公里數。',false);
+    }catch(e){
+      setStatus('載入失敗：'+(e&&e.message?e.message:'未知錯誤'),true);
+    }
+  }
+  function saveManualSession(){
+    try{
+      var date=el('manualSessionDate').value;
+      var st=el('manualStartTime').value;
+      var et=el('manualEndTime').value;
+      var soRaw=el('manualStartOdo').value;
+      var eoRaw=el('manualEndOdo').value;
+      if(!date||!st||!et||soRaw===''||eoRaw===''){
+        setStatus('請完整輸入日期、進出卡時間與公里數。',true);
+        return;
+      }
+      var so=Number(soRaw), eo=Number(eoRaw);
+      if(!Number.isFinite(so)||!Number.isFinite(eo)||so<0||eo<0){
+        setStatus('請確認公里數格式。',true);
+        return;
+      }
+      if(eo<so){
+        setStatus('出卡公里數不可小於進卡公里數。',true);
+        return;
+      }
+      var endDate=(et<=st)?ymdNext(date):date;
+      var startAt=date+'T'+st+':00';
+      var endAt=endDate+'T'+et+':00';
+      var sessions=typeof loadSessions==='function'?loadSessions():[];
+      var targetId=el('manualSessionId').value;
+      var idx=-1;
+      if(targetId) idx=sessions.findIndex(function(x){return x.id===targetId});
+      if(idx<0) idx=sessions.findIndex(function(x){return !x.endAt && x.date===date});
+      var updated=idx>=0;
+      if(updated){
+        sessions[idx]=Object.assign({},sessions[idx],{
+          date:date,startAt:startAt,startOdo:so,endAt:endAt,endOdo:eo
+        });
+      }else{
+        var sid=(typeof uid==='function'?uid():(Date.now().toString(36)+Math.random().toString(36).slice(2,7)));
+        sessions.push({id:sid,date:date,startAt:startAt,startOdo:so,endAt:endAt,endOdo:eo});
+      }
+      if(typeof saveSessions==='function') saveSessions(sessions);
+      else throw new Error('無法寫入進出卡資料');
+      try{if(typeof saveAppState==='function')saveAppState({recordDate:date})}catch(e){}
+      el('manualSessionId').value='';
+      try{if(typeof renderPunch==='function')renderPunch()}catch(e){}
+      try{if(typeof renderAll==='function')renderAll()}catch(e){}
+      try{if(typeof syncGlobalOnlineBadge==='function')syncGlobalOnlineBadge()}catch(e){}
+      setStatus(updated?'✓ 已修正未出卡紀錄，工時與里程已重新計算。':'✓ 已新增補登紀錄，工時與里程已重新計算。',false);
+      try{if(typeof toast==='function')toast(updated?'上下線已修正':'上下線已補登')}catch(e){}
+    }catch(e){
+      setStatus('儲存失敗：'+(e&&e.message?e.message:'未知錯誤'),true);
+    }
+  }
+  function init(){
+    defaultManualDate();
+    var l=el('loadOpenSessionBtn'), s=el('saveManualSessionBtn');
+    if(l && !l.dataset.bound){l.dataset.bound='1';l.addEventListener('click',loadOpenSession)}
+    if(s && !s.dataset.bound){s.dataset.bound='1';s.addEventListener('click',saveManualSession)}
+  }
+  document.addEventListener('DOMContentLoaded',init);
+  window.addEventListener('pageshow',init);
+  setTimeout(init,100);
 })();
 </script>
 </body>
