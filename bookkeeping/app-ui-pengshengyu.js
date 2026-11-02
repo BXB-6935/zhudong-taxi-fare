@@ -1,12 +1,14 @@
 function renderKPIs(agg){
   const items=[
-    ['green','💵','區間總營收',money(agg.revenue),'#17b875'],
+    ['green','🚕','純跑車營收',money(agg.fareRevenue),'#17b875'],
+    ['pink','💰','小費收入',money(agg.tipRevenue),'#ea4f8b'],
+    ['teal','💵','合計收入',money(agg.revenue),'#0fa889'],
     ['blue','🕒','區間總工時',`${num(agg.hours)} 小時`,'#1677ff'],
     ['purple','🧾','區間單數',`${num(agg.orders,0)} 單`,'#8a56e8'],
     ['orange','🛣️','區間里程',`${num(agg.mileage)} 公里`,'#ff8b2c'],
-    ['pink','📶','每小時營收',money(agg.perHour),'#ea4f8b'],
-    ['teal','👥','平均客單',money(agg.avgOrder),'#0fa889'],
-    ['blue','☀️','平均每天營收',money(agg.avgDay),'#1677ff'],
+    ['pink','📶','每小時車資',money(agg.perHour),'#ea4f8b'],
+    ['teal','👥','平均每單車資',money(agg.avgOrder),'#0fa889'],
+    ['blue','☀️','平均每天車資',money(agg.avgDay),'#1677ff'],
     ['purple','📅','實際有跑的天數',`${agg.days} 天`,'#8a56e8'],
   ];
   $('#kpiGrid').innerHTML=items.map(([cls,ic,label,val,c])=>`
@@ -23,12 +25,15 @@ function renderKPIs(agg){
 function dailyRows(rows,sessions=[]){
   const map={};
   function ensure(date){
-    if(!map[date]) map[date]={date,revenue:0,hours:0,orders:0,mileage:0,punchIn:'-',punchOut:'-',_punchInAt:null,_punchOutAt:null};
+    if(!map[date]) map[date]={date,fareRevenue:0,tipRevenue:0,revenue:0,hours:0,orders:0,mileage:0,punchIn:'-',punchOut:'-',_punchInAt:null,_punchOutAt:null};
     return map[date];
   }
   rows.forEach(r=>{
     const x=ensure(r.date);
-    x.revenue += (+r.revenue||0);
+    const fare=fareValue(r), tip=tipValue(r);
+    x.fareRevenue += fare;
+    x.tipRevenue += tip;
+    x.revenue += fare+tip;
     x.orders += 1;
   });
   sessions.forEach(s=>{
@@ -113,27 +118,29 @@ function renderCompare(){
   $('#cmpLeftLabel').textContent=c.left;$('#cmpRightLabel').textContent=c.right;
   $('#cmpLeftRange').textContent=`${fmtDate(c.aS)} - ${fmtDate(c.aE)}`;
   $('#cmpRightRange').textContent=`${fmtDate(c.bS)} - ${fmtDate(c.bE)}`;
-  $('#cmpLeftValue').textContent=money(c.a.revenue);$('#cmpRightValue').textContent=money(c.b.revenue);
+  $('#cmpLeftValue').textContent=money(c.a.fareRevenue);$('#cmpRightValue').textContent=money(c.b.fareRevenue);
   const metrics=[
-    ['營收成長',growth(c.a.revenue,c.b.revenue)],
+    ['純車資成長',growth(c.a.fareRevenue,c.b.fareRevenue)],
+    ['小費成長',growth(c.a.tipRevenue,c.b.tipRevenue)],
     ['單數成長',growth(c.a.orders,c.b.orders)],
     ['工時成長',growth(c.a.hours,c.b.hours)],
     ['里程成長',growth(c.a.mileage,c.b.mileage)]
   ];
   $('#compareList').innerHTML=metrics.map(([n,v])=>`<div class="compare-row"><span>${n}</span><span class="${v>=0?'up':'down'}">${pct(v)} ${v>=0?'↑':'↓'}</span></div>`).join('');
   $('#miniCompare').innerHTML=[
-    ['g','營收成長',growth(c.a.revenue,c.b.revenue)],
+    ['g','純車資成長',growth(c.a.fareRevenue,c.b.fareRevenue)],
+    ['p','小費成長',growth(c.a.tipRevenue,c.b.tipRevenue)],
     ['b','單數成長',growth(c.a.orders,c.b.orders)],
-    ['o','工時成長',growth(c.a.hours,c.b.hours)],
-    ['p','里程成長',growth(c.a.mileage,c.b.mileage)]
+    ['o','工時成長',growth(c.a.hours,c.b.hours)]
   ].map(([cls,n,v])=>`<div class="mini ${cls}"><strong class="${v>=0?'up':'down'}">${pct(v)}</strong><span>${n}</span></div>`).join('');
 }
 function renderDetail(rows){
   const sorted=[...rows].sort((a,b)=>b.date.localeCompare(a.date));
   $('#detailBody').innerHTML=sorted.length?sorted.map(r=>{
-    const avg=(+r.orders||0)?(+r.revenue||0)/(+r.orders):0, ph=(+r.hours||0)?(+r.revenue||0)/(+r.hours):0;
-    return `<tr><td>${fmtDate(r.date)}</td><td>${r.punchIn||'-'}</td><td>${r.punchOut||'-'}</td><td>${money(r.revenue)}</td><td>${num(r.hours)}</td><td>${num(r.orders,0)}</td><td>${num(r.mileage)}</td><td>${money(avg)}</td><td>${money(ph)}</td></tr>`
-  }).join(''):`<tr><td colspan="9" class="empty">沒有資料</td></tr>`;
+    const avg=(+r.orders||0)?(+r.fareRevenue||0)/(+r.orders):0;
+    const ph=(+r.hours||0)?(+r.fareRevenue||0)/(+r.hours):0;
+    return `<tr><td>${fmtDate(r.date)}</td><td>${r.punchIn||'-'}</td><td>${r.punchOut||'-'}</td><td>${money(r.fareRevenue)}</td><td>${money(r.tipRevenue)}</td><td>${money(r.revenue)}</td><td>${num(r.hours)}</td><td>${num(r.orders,0)}</td><td>${num(r.mileage)}</td><td>${money(avg)}</td><td>${money(ph)}</td></tr>`
+  }).join(''):`<tr><td colspan="11" class="empty">沒有資料</td></tr>`;
 }
 function renderHome(){
   if(!currentStart||!currentEnd){const r=getRangePreset('7d');currentStart=r[0];currentEnd=r[1];$('#startDate').value=r[0];$('#endDate').value=r[1]}
@@ -142,7 +149,8 @@ function renderHome(){
   const agg=aggregate(rows,sessions);
   const daily=dailyRows(rows,sessions);
   renderKPIs(agg);
-  $('#revenueChart').innerHTML=makeLineChart(daily,'revenue');
+  $('#revenueChart').innerHTML=makeLineChart(daily,'fareRevenue');
+  if($('#tipChart')) $('#tipChart').innerHTML=makeLineChart(daily,'tipRevenue');
   $('#ordersChart').innerHTML=makeBarChart(daily,'orders');
   $('#hoursMileageChart').innerHTML=makeComboChart(daily);
   renderCompare();renderDetail(daily);
@@ -169,7 +177,9 @@ function renderStats(){
   const agg=aggregate(rows,sessions);
   $('#statsSummary').innerHTML=`
     <div class="kpi-grid">
-      <div class="kpi green"><div class="label">累計營收</div><div class="value">${money(agg.revenue)}</div></div>
+      <div class="kpi green"><div class="label">累計純車資</div><div class="value">${money(agg.fareRevenue)}</div></div>
+      <div class="kpi pink"><div class="label">累計小費</div><div class="value">${money(agg.tipRevenue)}</div></div>
+      <div class="kpi teal"><div class="label">累計合計收入</div><div class="value">${money(agg.revenue)}</div></div>
       <div class="kpi blue"><div class="label">累計工時</div><div class="value">${num(agg.hours)} 小時</div></div>
       <div class="kpi purple"><div class="label">累計單數</div><div class="value">${num(agg.orders,0)} 單</div></div>
       <div class="kpi orange"><div class="label">累計里程</div><div class="value">${num(agg.mileage)} 公里</div></div>
@@ -177,10 +187,13 @@ function renderStats(){
   const byMonth={};
   rows.forEach(r=>{
     const m=r.date.slice(0,7);
-    byMonth[m]=(byMonth[m]||0)+(+r.revenue||0);
+    if(!byMonth[m]) byMonth[m]={fareRevenue:0,tipRevenue:0};
+    byMonth[m].fareRevenue += fareValue(r);
+    byMonth[m].tipRevenue += tipValue(r);
   });
-  const mrows=Object.entries(byMonth).sort().map(([date,revenue])=>({date:date+'-01',revenue}));
-  $('#monthlyChart').innerHTML=makeBarChart(mrows,'revenue','#5b9df9',230);
+  const mrows=Object.entries(byMonth).sort().map(([date,v])=>({date:date+'-01',fareRevenue:v.fareRevenue,tipRevenue:v.tipRevenue}));
+  $('#monthlyChart').innerHTML=makeBarChart(mrows,'fareRevenue','#5b9df9',230);
+  if($('#tipMonthlyChart')) $('#tipMonthlyChart').innerHTML=makeBarChart(mrows,'tipRevenue','#5b9df9',230);
 }
 function renderCar(){
   let car={};try{car=JSON.parse(localStorage.getItem(CAR_KEY)||'{}')}catch(e){}
