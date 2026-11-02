@@ -22,12 +22,17 @@ function renderPunch(){
   const hours=closed.reduce((a,x)=>a+Math.max(0,(new Date(x.endAt)-new Date(x.startAt))/3600000),0);
   const km=closed.reduce((a,x)=>a+Math.max(0,(+x.endOdo||0)-(+x.startOdo||0)),0);
   const todayRows=loadRecords().filter(r=>r.date===businessDay);
+  const todayFare=todayRows.reduce((a,r)=>a+fareValue(r),0);
+  const todayTip=todayRows.reduce((a,r)=>a+tipValue(r),0);
+  const todayTotal=todayFare+todayTip;
   $('#todayPunchSummary').innerHTML=`
     <div class="mini-compare">
-      <div class="mini b"><strong>${num(hours)} 小時</strong><span>本營業日已完成工時</span></div>
-      <div class="mini g"><strong>${num(km)} km</strong><span>本營業日已完成里程</span></div>
-      <div class="mini o"><strong>${todayRows.length} 單</strong><span>本營業日明細筆數</span></div>
-      <div class="mini p"><strong>${money(todayRows.reduce((a,r)=>a+(+r.revenue||0),0))}</strong><span>本營業日營收</span></div>
+      <div class="mini b"><strong>${num(hours)} 小時</strong><span>本營業日工時</span></div>
+      <div class="mini g"><strong>${num(km)} km</strong><span>本營業日里程</span></div>
+      <div class="mini o"><strong>${todayRows.length} 單</strong><span>本營業日單數</span></div>
+      <div class="mini g"><strong>${money(todayFare)}</strong><span>純跑車車資</span></div>
+      <div class="mini p"><strong>${money(todayTip)}</strong><span>小費收入</span></div>
+      <div class="mini b"><strong>${money(todayTotal)}</strong><span>合計收入</span></div>
     </div>`;
 }
 
