@@ -96,7 +96,7 @@
     </div>
 
     <div class="card">
-      <div class="section-title"><span>📄 每日明細</span><button id="exportBtn" class="secondary-btn" style="width:auto;padding:7px 10px;margin:0">匯出 CSV</button></div>
+      <div class="section-title"><span>📄 總登記表</span><button id="exportBtn" class="secondary-btn" style="width:auto;padding:7px 10px;margin:0">匯出 CSV</button></div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -105,6 +105,18 @@
             </tr>
           </thead>
           <tbody id="detailBody"></tbody>
+          <tfoot>
+            <tr id="detailTotalRow">
+              <th colspan="3">區間總計</th>
+              <th id="detailFareTotal">NT$ 0</th>
+              <th id="detailTipTotal">NT$ 0</th>
+              <th id="detailIncomeTotal">NT$ 0</th>
+              <th id="detailHoursTotal">0</th>
+              <th id="detailOrdersTotal">0</th>
+              <th id="detailMileageTotal">0</th>
+              <th colspan="2"></th>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
