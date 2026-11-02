@@ -32,7 +32,7 @@ function renderPunch(){
       <div class="mini o"><strong>${todayRows.length} 單</strong><span>本營業日單數</span></div>
       <div class="mini g"><strong>${money(todayFare)}</strong><span>純跑車車資</span></div>
       <div class="mini p"><strong>${money(todayTip)}</strong><span>小費收入</span></div>
-      <div class="mini b"><strong>${money(todayTotal)}</strong><span>合計收入</span></div>
+      <div class="mini b"><strong>${money(todayTotal)}</strong><span>實收合計（參考）</span></div>
     </div>`;
 }
 
