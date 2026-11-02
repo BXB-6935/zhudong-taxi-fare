@@ -168,8 +168,15 @@ function setRange(type){
   renderHome();
 }
 function inRange(row,s,e){return row.date>=s && row.date<=e}
+function tipValue(r){return Math.max(0,(+r?.tip||0))}
+function fareValue(r){
+  if(r && r.fare!=null && Number.isFinite(+r.fare)) return Math.max(0,+r.fare);
+  return Math.max(0,(+r?.revenue||0)-tipValue(r));
+}
 function aggregate(rows,sessions=[]){
-  const revenue=rows.reduce((a,b)=>a+(+b.revenue||0),0);
+  const fareRevenue=rows.reduce((a,b)=>a+fareValue(b),0);
+  const tipRevenue=rows.reduce((a,b)=>a+tipValue(b),0);
+  const revenue=fareRevenue+tipRevenue;
   const orders=rows.length;
   const closed=sessions.filter(s=>s.endAt && s.endOdo!=null);
   const hours=closed.reduce((a,s)=>{
@@ -178,7 +185,12 @@ function aggregate(rows,sessions=[]){
   },0);
   const mileage=closed.reduce((a,s)=>a+Math.max(0,(+s.endOdo||0)-(+s.startOdo||0)),0);
   const days=new Set(sessions.map(s=>s.date).concat(rows.map(r=>r.date))).size;
-  return {revenue,hours,orders,mileage,days,perHour:hours?revenue/hours:0,avgOrder:orders?revenue/orders:0,avgDay:days?revenue/days:0}
+  return {
+    fareRevenue,tipRevenue,revenue,hours,orders,mileage,days,
+    perHour:hours?fareRevenue/hours:0,
+    avgOrder:orders?fareRevenue/orders:0,
+    avgDay:days?fareRevenue/days:0
+  }
 }
 function dateSpan(s,e){
   return Math.max(1,Math.round((parseISO(e)-parseISO(s))/86400000)+1)
