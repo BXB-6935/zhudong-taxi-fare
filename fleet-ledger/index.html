@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-build" content="20261104-2245">
+<meta name="app-build" content="20261104-2332">
 <title>車行登記儀表板</title>
 <style>
 :root{
@@ -368,9 +368,27 @@ function saveRecord(){
   };
   if(editId) rows=rows.map(r=>r.id===editId?rec:r); else rows.push(rec);
   save(rows);
+
+  // 儲存後自動切到該筆日期，避免補登舊日期時被「今天」篩選掉。
+  currentRange='all';
+  selectedMonth=date.slice(0,7);
+  $('#filterMonth').value='';
+  $('#filterDate').value=date;
+  $('#filterPlate').value='';
+  $('#filterDriver').value='';
+  $('#filterPayment').value='';
+  $('#filterStatus').value='';
+  $('.chip').forEach(x=>x.classList.toggle('active',x.dataset.range==='all'));
+
   resetForm();
-  $('#saveStatus').textContent=editId?'✓ 已更新紀錄':'✓ 已儲存紀錄';
+  $('#saveStatus').textContent=(editId?'✓ 已更新紀錄':'✓ 已儲存紀錄')+'｜已顯示 '+date+' 的登記資料';
+  $('#saveStatus').style.color='#168453';
   render();
+  setTimeout(()=>{
+    const body=$('#recordBody');
+    const section=body?.closest('.card');
+    if(section) section.scrollIntoView({behavior:'smooth',block:'start'});
+  },120);
 }
 
 function editRecord(id){
@@ -541,7 +559,8 @@ function render(){
   $('#sCredit').textContent=money(x.unpaid);
   $('#sPaidCredit').textContent=money(x.paidCredit);
   $('#sTotal').textContent=money(x.total);
-  $('#rangeLabel').textContent=currentRange==='today'?'今天':currentRange==='month'?'本月 '+toISO().slice(0,7):currentRange==='lastMonth'?'上月 '+shiftMonth(toISO().slice(0,7),-1):currentRange==='customMonth'?'月份 '+selectedMonth:'全部紀錄';
+  const exactDate=$('#filterDate').value;
+  $('#rangeLabel').textContent=exactDate?('日期 '+exactDate):(currentRange==='today'?'今天':currentRange==='month'?'本月 '+toISO().slice(0,7):currentRange==='lastMonth'?'上月 '+shiftMonth(toISO().slice(0,7),-1):currentRange==='customMonth'?'月份 '+selectedMonth:'全部紀錄');
 
   $('#recordBody').innerHTML=rows.length?rows.map(r=>`
     <tr>
@@ -586,7 +605,15 @@ $('#filterMonth').addEventListener('change',e=>{
   }
   render();
 });
-['filterDate','filterPlate','filterDriver','filterPayment','filterStatus'].forEach(id=>{
+$('#filterDate').addEventListener('change',e=>{
+  if(e.target.value){
+    currentRange='all';
+    $('#filterMonth').value='';
+    $('.chip').forEach(x=>x.classList.toggle('active',x.dataset.range==='all'));
+  }
+  render();
+});
+['filterPlate','filterDriver','filterPayment','filterStatus'].forEach(id=>{
   $('#'+id).addEventListener((id==='filterPlate'||id==='filterDriver')?'input':'change',render);
 });
 $('#clearFilter').addEventListener('click',()=>{
