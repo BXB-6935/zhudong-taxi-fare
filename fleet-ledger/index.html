@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-build" content="20261104-2205">
+<meta name="app-build" content="20261104-2220">
 <title>車行登記儀表板</title>
 <style>
 :root{
@@ -36,15 +36,15 @@ button{font:inherit}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
 .kpi{border-radius:15px;padding:12px;border:1px solid var(--line);min-height:88px}
 .kpi b{display:block;font-size:12px;color:var(--muted);margin-bottom:8px}.kpi strong{font-size:21px;line-height:1.1}
-.kpi.total{background:#eef5ff}.kpi.cash{background:#ecfbf4}.kpi.credit{background:#fff6e9}.kpi.count{background:#f4efff}
-.filters{display:grid;grid-template-columns:1.1fr 1fr .8fr auto;gap:8px;align-items:end}
+.kpi.total{background:#eef5ff}.kpi.cash{background:#ecfbf4}.kpi.credit{background:#fff6e9}.kpi.count{background:#f4efff}.kpi.paid{background:#eefbf8}
+.filters{display:grid;grid-template-columns:1fr 1fr 1fr .8fr .8fr auto;gap:8px;align-items:end}
 .quick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.chip{border:1px solid #dbe3ef;background:#fff;color:#44546a;border-radius:999px;padding:7px 11px;font-size:13px;font-weight:700}.chip.active{background:#e9f2ff;border-color:#a9caff;color:#145bb9}
 .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}
-table{width:100%;border-collapse:collapse;min-width:860px;background:#fff}
+table{width:100%;border-collapse:collapse;min-width:1180px;background:#fff}
 th,td{padding:10px 9px;border-bottom:1px solid var(--line);font-size:13px;text-align:left;white-space:nowrap}
 th{background:#f8fafc;color:#475569;font-weight:800;position:sticky;top:0;z-index:1}
 td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800}
-.badge.cash{background:#e6f8ef;color:#168453}.badge.credit{background:#fff1db;color:#b36a10}
+.badge.cash{background:#e6f8ef;color:#168453}.badge.credit{background:#fff1db;color:#b36a10}.badge.paid{background:#e9f8f1;color:#147a4e}.badge.unpaid{background:#fff0f0;color:#bd3e3e}
 .row-actions{display:flex;gap:5px}.mini{border:0;border-radius:8px;padding:6px 8px;font-size:12px;font-weight:800;cursor:pointer}.edit{background:#edf4ff;color:#1768cf}.del{background:#fff0f0;color:#c84444}
 .empty{text-align:center;color:var(--muted);padding:24px}
 .summary{display:flex;justify-content:flex-end;gap:16px;flex-wrap:wrap;padding:12px 4px 0;font-size:13px;color:#475569}.summary strong{color:#172033}
@@ -66,7 +66,7 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
   <div class="header-row">
     <div>
       <h1>🚕 車行登記儀表板</h1>
-      <div class="sub">每日收款・記帳・車輛紀錄</div>
+      <div class="sub">司機・車輛・現金・記帳・應收管理</div>
     </div>
     <div id="todayText" style="font-size:12px;opacity:.9"></div>
   </div>
@@ -86,12 +86,20 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
         <input type="time" id="fTime">
       </div>
       <div class="field">
+        <label>司機姓名</label>
+        <input type="text" id="fDriver" placeholder="例如 王大明" autocomplete="off">
+      </div>
+      <div class="field">
         <label>車牌號碼</label>
         <input type="text" id="fPlate" placeholder="例如 ABC-1234" autocomplete="off">
       </div>
       <div class="field">
-        <label>地點</label>
-        <input type="text" id="fLocation" placeholder="例如 竹東火車站 / 新竹高鐵">
+        <label>上車地點</label>
+        <input type="text" id="fPickup" placeholder="例如 竹東火車站">
+      </div>
+      <div class="field">
+        <label>下車地點</label>
+        <input type="text" id="fDropoff" placeholder="例如 新竹高鐵站">
       </div>
       <div class="field">
         <label>金額（NT$）</label>
@@ -104,9 +112,20 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
           <option value="記帳">記帳</option>
         </select>
       </div>
+      <div class="field" id="customerField">
+        <label>記帳客戶／公司</label>
+        <input type="text" id="fCustomer" placeholder="記帳時填寫，例如 XX 公司">
+      </div>
+      <div class="field">
+        <label>收款狀態</label>
+        <select id="fStatus">
+          <option value="已收">已收</option>
+          <option value="未收">未收</option>
+        </select>
+      </div>
       <div class="field full">
         <label>備註</label>
-        <input type="text" id="fNote" placeholder="可不填，例如：熟客、公司簽帳、機場接送">
+        <input type="text" id="fNote" placeholder="可不填，例如：熟客、機場接送、包車">
       </div>
     </div>
     <div class="actions">
@@ -119,9 +138,10 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
   <section class="card">
     <div class="section-title"><span>📊 收支總覽</span><span id="rangeLabel" style="font-size:12px;color:#718096"></span></div>
     <div class="kpis">
-      <div class="kpi total"><b>總金額</b><strong id="kTotal">NT$ 0</strong></div>
-      <div class="kpi cash"><b>現金</b><strong id="kCash">NT$ 0</strong></div>
+      <div class="kpi total"><b>總營收</b><strong id="kTotal">NT$ 0</strong></div>
+      <div class="kpi cash"><b>現金收入</b><strong id="kCash">NT$ 0</strong></div>
       <div class="kpi credit"><b>記帳未收</b><strong id="kCredit">NT$ 0</strong></div>
+      <div class="kpi paid"><b>記帳已收</b><strong id="kPaidCredit">NT$ 0</strong></div>
       <div class="kpi count"><b>登記筆數</b><strong id="kCount">0 筆</strong></div>
     </div>
   </section>
@@ -140,7 +160,11 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
       </div>
       <div class="field">
         <label>車牌</label>
-        <input type="text" id="filterPlate" placeholder="輸入部分車牌即可">
+        <input type="text" id="filterPlate" placeholder="輸入部分車牌">
+      </div>
+      <div class="field">
+        <label>司機</label>
+        <input type="text" id="filterDriver" placeholder="輸入司機姓名">
       </div>
       <div class="field">
         <label>收款方式</label>
@@ -148,6 +172,14 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
           <option value="">全部</option>
           <option value="現金">現金</option>
           <option value="記帳">記帳</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>收款狀態</label>
+        <select id="filterStatus">
+          <option value="">全部</option>
+          <option value="已收">已收</option>
+          <option value="未收">未收</option>
         </select>
       </div>
       <button class="secondary full-mobile" id="clearFilter" type="button">清除篩選</button>
@@ -159,15 +191,26 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>日期</th><th>時間</th><th>車牌號碼</th><th>地點</th><th>金額</th><th>收款方式</th><th>備註</th><th>操作</th></tr>
+          <tr><th>日期</th><th>時間</th><th>司機</th><th>車牌</th><th>上車地點</th><th>下車地點</th><th>金額</th><th>方式</th><th>記帳客戶</th><th>狀態</th><th>備註</th><th>操作</th></tr>
         </thead>
         <tbody id="recordBody"></tbody>
       </table>
     </div>
     <div class="summary">
       <span>現金：<strong id="sCash">NT$ 0</strong></span>
-      <span>記帳：<strong id="sCredit">NT$ 0</strong></span>
-      <span>合計：<strong id="sTotal">NT$ 0</strong></span>
+      <span>記帳未收：<strong id="sCredit">NT$ 0</strong></span>
+      <span>記帳已收：<strong id="sPaidCredit">NT$ 0</strong></span>
+      <span>合計營收：<strong id="sTotal">NT$ 0</strong></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title"><span>🚘 每台車每日營收</span><span style="font-size:12px;color:#718096">依目前篩選條件</span></div>
+    <div class="table-wrap">
+      <table style="min-width:760px">
+        <thead><tr><th>日期</th><th>車牌</th><th>司機</th><th>現金</th><th>記帳已收</th><th>記帳未收</th><th>總營收</th><th>筆數</th></tr></thead>
+        <tbody id="carDailyBody"></tbody>
+      </table>
     </div>
   </section>
 
@@ -197,49 +240,93 @@ function nowTime(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinu
 function money(v){return 'NT$ '+Number(v||0).toLocaleString('zh-TW')}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function load(){try{const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}
+function normalizePlate(v){return String(v||'').trim().toUpperCase().replace(/\s+/g,'')}
+function normalizeRecord(r){
+  const payment=r?.payment==='記帳'?'記帳':'現金';
+  return {
+    ...r,
+    driver:String(r?.driver||''),
+    plate:normalizePlate(r?.plate||''),
+    pickup:String(r?.pickup ?? r?.location ?? ''),
+    dropoff:String(r?.dropoff||''),
+    amount:Number(r?.amount||0),
+    payment,
+    customer:String(r?.customer||''),
+    status:r?.status||(payment==='記帳'?'未收':'已收'),
+    note:String(r?.note||'')
+  };
+}
+function load(){
+  try{
+    const x=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+    return Array.isArray(x)?x.map(normalizeRecord):[];
+  }catch(e){return[]}
+}
 function save(rows){localStorage.setItem(STORAGE_KEY,JSON.stringify(rows))}
 function setStatus(msg,bad=false){const el=$('#saveStatus');el.textContent=msg;el.style.color=bad?'#d94646':'#168453'}
-function normalizePlate(v){return String(v||'').trim().toUpperCase().replace(/\s+/g,'')}
 
+function syncPaymentFields(){
+  const isCredit=$('#fPayment').value==='記帳';
+  $('#customerField').style.opacity=isCredit?'1':'.55';
+  $('#fCustomer').disabled=!isCredit;
+  if(isCredit){
+    if(!$('#editId').value && $('#fStatus').value==='已收') $('#fStatus').value='未收';
+  }else{
+    $('#fCustomer').value='';
+    $('#fStatus').value='已收';
+  }
+}
 function resetForm(){
   $('#editId').value='';
   $('#editBadge').textContent='新增模式';
   $('#fDate').value=toISO();
   $('#fTime').value=nowTime();
+  $('#fDriver').value='';
   $('#fPlate').value='';
-  $('#fLocation').value='';
+  $('#fPickup').value='';
+  $('#fDropoff').value='';
   $('#fAmount').value='';
   $('#fPayment').value='現金';
+  $('#fCustomer').value='';
+  $('#fStatus').value='已收';
   $('#fNote').value='';
+  syncPaymentFields();
   setStatus('');
 }
 
 function saveRecord(){
   const date=$('#fDate').value;
   const time=$('#fTime').value;
+  const driver=$('#fDriver').value.trim();
   const plate=normalizePlate($('#fPlate').value);
-  const location=$('#fLocation').value.trim();
+  const pickup=$('#fPickup').value.trim();
+  const dropoff=$('#fDropoff').value.trim();
   const amountRaw=$('#fAmount').value;
   const amount=Number(amountRaw);
   const payment=$('#fPayment').value;
+  const customer=payment==='記帳'?$('#fCustomer').value.trim():'';
+  const status=payment==='現金'?'已收':$('#fStatus').value;
   const note=$('#fNote').value.trim();
+
   if(!date){setStatus('請選擇日期',true);return}
   if(!time){setStatus('請輸入時間',true);return}
+  if(!driver){setStatus('請輸入司機姓名',true);$('#fDriver').focus();return}
   if(!plate){setStatus('請輸入車牌號碼',true);$('#fPlate').focus();return}
-  if(!location){setStatus('請輸入地點',true);$('#fLocation').focus();return}
+  if(!pickup){setStatus('請輸入上車地點',true);$('#fPickup').focus();return}
+  if(!dropoff){setStatus('請輸入下車地點',true);$('#fDropoff').focus();return}
   if(amountRaw===''||!Number.isFinite(amount)||amount<0){setStatus('請確認金額',true);$('#fAmount').focus();return}
+  if(payment==='記帳'&&!customer){setStatus('記帳請填寫客戶或公司名稱',true);$('#fCustomer').focus();return}
+
   let rows=load();
   const editId=$('#editId').value;
   const old=editId?rows.find(r=>r.id===editId):null;
   const rec={
-    id:editId||uid(),date,time,plate,location,amount,payment,note,
+    id:editId||uid(),date,time,driver,plate,pickup,dropoff,amount,payment,customer,status,note,
     createdAt:old?.createdAt||new Date().toISOString(),
     updatedAt:new Date().toISOString()
   };
   if(editId) rows=rows.map(r=>r.id===editId?rec:r); else rows.push(rec);
   save(rows);
-  setStatus(editId?'✓ 已更新紀錄':'✓ 已儲存紀錄');
   resetForm();
   $('#saveStatus').textContent=editId?'✓ 已更新紀錄':'✓ 已儲存紀錄';
   render();
@@ -249,92 +336,143 @@ function editRecord(id){
   const r=load().find(x=>x.id===id);if(!r)return;
   $('#editId').value=r.id;
   $('#editBadge').textContent='編輯模式';
-  $('#fDate').value=r.date;
-  $('#fTime').value=r.time;
-  $('#fPlate').value=r.plate;
-  $('#fLocation').value=r.location;
-  $('#fAmount').value=r.amount;
+  $('#fDate').value=r.date||toISO();
+  $('#fTime').value=r.time||nowTime();
+  $('#fDriver').value=r.driver||'';
+  $('#fPlate').value=r.plate||'';
+  $('#fPickup').value=r.pickup||'';
+  $('#fDropoff').value=r.dropoff||'';
+  $('#fAmount').value=r.amount??'';
   $('#fPayment').value=r.payment||'現金';
+  $('#fCustomer').value=r.customer||'';
+  $('#fStatus').value=r.status||((r.payment==='記帳')?'未收':'已收');
   $('#fNote').value=r.note||'';
+  syncPaymentFields();
   setStatus('正在編輯這筆紀錄');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function deleteRecord(id){
   if(!confirm('確定刪除這筆紀錄？'))return;
-  save(load().filter(r=>r.id!==id));
-  render();
+  save(load().filter(r=>r.id!==id));render();
 }
-window.editRecord=editRecord;window.deleteRecord=deleteRecord;
+function markCollected(id){
+  const rows=load().map(r=>r.id===id?{...r,status:'已收',updatedAt:new Date().toISOString()}:r);
+  save(rows);render();
+}
+window.editRecord=editRecord;window.deleteRecord=deleteRecord;window.markCollected=markCollected;
 
 function monthKey(date){return String(date||'').slice(0,7)}
 function filteredRows(){
   let rows=load();
-  const today=toISO(), month=today.slice(0,7);
+  const today=toISO(),month=today.slice(0,7);
   if(currentRange==='today') rows=rows.filter(r=>r.date===today);
   if(currentRange==='month') rows=rows.filter(r=>monthKey(r.date)===month);
+
   const fd=$('#filterDate').value;
   const fp=normalizePlate($('#filterPlate').value);
+  const drv=$('#filterDriver').value.trim().toLowerCase();
   const pay=$('#filterPayment').value;
+  const status=$('#filterStatus').value;
   if(fd) rows=rows.filter(r=>r.date===fd);
   if(fp) rows=rows.filter(r=>normalizePlate(r.plate).includes(fp));
+  if(drv) rows=rows.filter(r=>String(r.driver||'').toLowerCase().includes(drv));
   if(pay) rows=rows.filter(r=>r.payment===pay);
-  return rows.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  if(status) rows=rows.filter(r=>r.status===status);
+  return rows.sort((a,b)=>(String(b.date)+String(b.time)).localeCompare(String(a.date)+String(a.time)));
 }
-
 function calc(rows){
   const cash=rows.filter(r=>r.payment==='現金').reduce((a,r)=>a+(+r.amount||0),0);
-  const credit=rows.filter(r=>r.payment==='記帳').reduce((a,r)=>a+(+r.amount||0),0);
-  return {cash,credit,total:cash+credit,count:rows.length};
+  const unpaid=rows.filter(r=>r.payment==='記帳'&&r.status==='未收').reduce((a,r)=>a+(+r.amount||0),0);
+  const paidCredit=rows.filter(r=>r.payment==='記帳'&&r.status==='已收').reduce((a,r)=>a+(+r.amount||0),0);
+  const total=rows.reduce((a,r)=>a+(+r.amount||0),0);
+  return {cash,unpaid,paidCredit,total,count:rows.length};
+}
+function renderCarDaily(rows){
+  const map={};
+  rows.forEach(r=>{
+    const key=(r.date||'')+'|'+(r.plate||'');
+    if(!map[key])map[key]={date:r.date,plate:r.plate,drivers:new Set(),cash:0,paid:0,unpaid:0,total:0,count:0};
+    const x=map[key]; if(r.driver)x.drivers.add(r.driver);
+    if(r.payment==='現金')x.cash+=(+r.amount||0);
+    else if(r.status==='已收')x.paid+=(+r.amount||0);
+    else x.unpaid+=(+r.amount||0);
+    x.total+=(+r.amount||0);x.count++;
+  });
+  const data=Object.values(map).sort((a,b)=>(b.date+b.plate).localeCompare(a.date+a.plate));
+  $('#carDailyBody').innerHTML=data.length?data.map(x=>`
+    <tr>
+      <td>${esc(x.date)}</td>
+      <td><strong>${esc(x.plate)}</strong></td>
+      <td>${esc([...x.drivers].join('、')||'-')}</td>
+      <td class="amount">${money(x.cash)}</td>
+      <td class="amount">${money(x.paid)}</td>
+      <td class="amount">${money(x.unpaid)}</td>
+      <td class="amount">${money(x.total)}</td>
+      <td>${x.count} 筆</td>
+    </tr>`).join(''):`<tr><td colspan="8" class="empty">目前沒有資料</td></tr>`;
 }
 function render(){
-  const rows=filteredRows();
-  const x=calc(rows);
+  const rows=filteredRows(),x=calc(rows);
   $('#kTotal').textContent=money(x.total);
   $('#kCash').textContent=money(x.cash);
-  $('#kCredit').textContent=money(x.credit);
+  $('#kCredit').textContent=money(x.unpaid);
+  $('#kPaidCredit').textContent=money(x.paidCredit);
   $('#kCount').textContent=x.count+' 筆';
   $('#sCash').textContent=money(x.cash);
-  $('#sCredit').textContent=money(x.credit);
+  $('#sCredit').textContent=money(x.unpaid);
+  $('#sPaidCredit').textContent=money(x.paidCredit);
   $('#sTotal').textContent=money(x.total);
   $('#rangeLabel').textContent=currentRange==='today'?'今天':currentRange==='month'?'本月':'全部紀錄';
+
   $('#recordBody').innerHTML=rows.length?rows.map(r=>`
     <tr>
       <td>${esc(r.date)}</td>
       <td>${esc(r.time)}</td>
+      <td>${esc(r.driver||'-')}</td>
       <td><strong>${esc(r.plate)}</strong></td>
-      <td>${esc(r.location)}</td>
+      <td>${esc(r.pickup||'-')}</td>
+      <td>${esc(r.dropoff||'-')}</td>
       <td class="amount">${money(r.amount)}</td>
-      <td><span class="badge ${r.payment==='記帳'?'credit':'cash'}">${esc(r.payment||'現金')}</span></td>
+      <td><span class="badge ${r.payment==='記帳'?'credit':'cash'}">${esc(r.payment)}</span></td>
+      <td>${esc(r.customer||'-')}</td>
+      <td><span class="badge ${r.status==='未收'?'unpaid':'paid'}">${esc(r.status)}</span></td>
       <td>${esc(r.note||'-')}</td>
-      <td><div class="row-actions"><button class="mini edit" onclick="editRecord('${r.id}')">編輯</button><button class="mini del" onclick="deleteRecord('${r.id}')">刪除</button></div></td>
-    </tr>`).join(''):`<tr><td colspan="8" class="empty">目前沒有符合條件的紀錄</td></tr>`;
+      <td><div class="row-actions">
+        ${r.payment==='記帳'&&r.status==='未收'?`<button class="mini" style="background:#e9f8f1;color:#147a4e" onclick="markCollected('${r.id}')">收款</button>`:''}
+        <button class="mini edit" onclick="editRecord('${r.id}')">編輯</button>
+        <button class="mini del" onclick="deleteRecord('${r.id}')">刪除</button>
+      </div></td>
+    </tr>`).join(''):`<tr><td colspan="12" class="empty">目前沒有符合條件的紀錄</td></tr>`;
+  renderCarDaily(rows);
 }
 
 $$('.chip').forEach(btn=>btn.addEventListener('click',()=>{
   currentRange=btn.dataset.range;
-  $$('.chip').forEach(x=>x.classList.toggle('active',x===btn));
-  render();
+  $$('.chip').forEach(x=>x.classList.toggle('active',x===btn));render();
 }));
-['filterDate','filterPlate','filterPayment'].forEach(id=>{
-  $('#'+id).addEventListener(id==='filterPlate'?'input':'change',render);
+['filterDate','filterPlate','filterDriver','filterPayment','filterStatus'].forEach(id=>{
+  $('#'+id).addEventListener((id==='filterPlate'||id==='filterDriver')?'input':'change',render);
 });
 $('#clearFilter').addEventListener('click',()=>{
-  $('#filterDate').value='';$('#filterPlate').value='';$('#filterPayment').value='';
+  $('#filterDate').value='';$('#filterPlate').value='';$('#filterDriver').value='';$('#filterPayment').value='';$('#filterStatus').value='';
   currentRange='today';$$('.chip').forEach(x=>x.classList.toggle('active',x.dataset.range==='today'));render();
 });
 $('#saveBtn').addEventListener('click',saveRecord);
 $('#resetBtn').addEventListener('click',resetForm);
+$('#fPayment').addEventListener('change',syncPaymentFields);
 $('#fPlate').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase()});
 
 $('#csvBtn').addEventListener('click',()=>{
   const rows=filteredRows();
   const q=s=>'"'+String(s??'').replaceAll('"','""')+'"';
-  const lines=['日期,時間,車牌號碼,地點,金額,收款方式,備註',...rows.map(r=>[r.date,r.time,q(r.plate),q(r.location),r.amount,r.payment,q(r.note)].join(','))];
+  const lines=['日期,時間,司機姓名,車牌號碼,上車地點,下車地點,金額,收款方式,記帳客戶,收款狀態,備註',...rows.map(r=>[
+    r.date,r.time,q(r.driver),q(r.plate),q(r.pickup),q(r.dropoff),r.amount,r.payment,q(r.customer),r.status,q(r.note)
+  ].join(','))];
   const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='車行登記表_'+toISO()+'.csv';a.click();URL.revokeObjectURL(a.href);
 });
 $('#backupBtn').addEventListener('click',()=>{
-  const data={version:1,exportedAt:new Date().toISOString(),records:load()};
+  const data={version:2,exportedAt:new Date().toISOString(),records:load()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='車行登記儀表板備份_'+toISO()+'.json';a.click();URL.revokeObjectURL(a.href);
 });
@@ -343,11 +481,10 @@ $('#restoreInput').addEventListener('change',e=>{
   const rd=new FileReader();
   rd.onload=()=>{
     try{
-      const data=JSON.parse(rd.result);
-      const rows=Array.isArray(data)?data:data.records;
+      const data=JSON.parse(rd.result),rows=Array.isArray(data)?data:data.records;
       if(!Array.isArray(rows))throw new Error('格式錯誤');
       if(!confirm('匯入後會以備份檔取代目前資料，確定繼續？'))return;
-      save(rows);render();alert('備份已匯入');
+      save(rows.map(normalizeRecord));render();alert('備份已匯入');
     }catch(err){alert('備份檔格式錯誤')}
     e.target.value='';
   };
