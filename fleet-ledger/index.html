@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-build" content="20261104-2235">
+<meta name="app-build" content="20261104-2245">
 <title>車行登記儀表板</title>
 <style>
 :root{
@@ -220,6 +220,40 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
   </section>
 
   <section class="card">
+    <div class="section-title">
+      <span>🏆 月份 × 車牌營收排名</span>
+      <span id="plateRankMonthLabel" style="font-size:12px;color:#718096"></span>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:900px">
+        <thead>
+          <tr><th>排名</th><th>車牌</th><th>司機</th><th>現金</th><th>記帳已收</th><th>記帳未收</th><th>總營收</th><th>筆數</th></tr>
+        </thead>
+        <tbody id="plateRankBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">
+      <span>📌 月底記帳未收清單</span>
+      <span id="unpaidMonthLabel" style="font-size:12px;color:#718096"></span>
+    </div>
+    <div class="kpis" style="margin-bottom:10px">
+      <div class="kpi credit"><b>本月未收總額</b><strong id="monthUnpaidTotal">NT$ 0</strong></div>
+      <div class="kpi count"><b>未收筆數</b><strong id="monthUnpaidCount">0 筆</strong></div>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:1180px">
+        <thead>
+          <tr><th>日期</th><th>時間</th><th>記帳客戶</th><th>司機</th><th>車牌</th><th>上車</th><th>下車</th><th>金額</th><th>備註</th><th>操作</th></tr>
+        </thead>
+        <tbody id="monthUnpaidBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
     <div class="section-title"><span>⚙️ 資料工具</span></div>
     <div class="tools">
       <button class="secondary" id="csvBtn">匯出 CSV 明細</button>
@@ -363,6 +397,9 @@ function deleteRecord(id){
   save(load().filter(r=>r.id!==id));render();
 }
 function markCollected(id){
+  const target=load().find(r=>r.id===id);
+  if(!target)return;
+  if(!confirm('確認 '+(target.customer||'此客戶')+' 的 '+money(target.amount)+' 已收款？'))return;
   const rows=load().map(r=>r.id===id?{...r,status:'已收',updatedAt:new Date().toISOString()}:r);
   save(rows);render();
 }
@@ -425,6 +462,74 @@ function renderCarDaily(rows){
       <td>${x.count} 筆</td>
     </tr>`).join(''):`<tr><td colspan="8" class="empty">目前沒有資料</td></tr>`;
 }
+function managementMonth(){
+  const todayMonth=toISO().slice(0,7);
+  const fd=$('#filterDate')?.value||'';
+  if(fd)return fd.slice(0,7);
+  if(currentRange==='lastMonth')return shiftMonth(todayMonth,-1);
+  if(currentRange==='customMonth')return selectedMonth||todayMonth;
+  if(currentRange==='month')return todayMonth;
+  if($('#filterMonth')?.value)return $('#filterMonth').value;
+  return todayMonth;
+}
+function managementMonthRows(){
+  const m=managementMonth();
+  let rows=load().filter(r=>monthKey(r.date)===m);
+  const fp=normalizePlate($('#filterPlate')?.value||'');
+  const drv=String($('#filterDriver')?.value||'').trim().toLowerCase();
+  if(fp)rows=rows.filter(r=>normalizePlate(r.plate).includes(fp));
+  if(drv)rows=rows.filter(r=>String(r.driver||'').toLowerCase().includes(drv));
+  return rows;
+}
+function renderPlateRanking(){
+  const m=managementMonth(),rows=managementMonthRows(),map={};
+  rows.forEach(r=>{
+    const key=r.plate||'未填車牌';
+    if(!map[key])map[key]={plate:key,drivers:new Set(),cash:0,paid:0,unpaid:0,total:0,count:0};
+    const x=map[key];
+    if(r.driver)x.drivers.add(r.driver);
+    if(r.payment==='現金')x.cash+=(+r.amount||0);
+    else if(r.status==='已收')x.paid+=(+r.amount||0);
+    else x.unpaid+=(+r.amount||0);
+    x.total+=(+r.amount||0);x.count++;
+  });
+  const data=Object.values(map).sort((a,b)=>b.total-a.total||b.count-a.count);
+  $('#plateRankMonthLabel').textContent=m;
+  $('#plateRankBody').innerHTML=data.length?data.map((x,i)=>`
+    <tr>
+      <td><strong>#${i+1}</strong></td>
+      <td><strong>${esc(x.plate)}</strong></td>
+      <td>${esc([...x.drivers].join('、')||'-')}</td>
+      <td class="amount">${money(x.cash)}</td>
+      <td class="amount">${money(x.paid)}</td>
+      <td class="amount">${money(x.unpaid)}</td>
+      <td class="amount"><strong>${money(x.total)}</strong></td>
+      <td>${x.count} 筆</td>
+    </tr>`).join(''):`<tr><td colspan="8" class="empty">這個月份目前沒有紀錄</td></tr>`;
+}
+function renderMonthUnpaid(){
+  const m=managementMonth();
+  const rows=managementMonthRows()
+    .filter(r=>r.payment==='記帳'&&r.status==='未收')
+    .sort((a,b)=>(String(a.date)+String(a.time)).localeCompare(String(b.date)+String(b.time)));
+  const total=rows.reduce((a,r)=>a+(+r.amount||0),0);
+  $('#unpaidMonthLabel').textContent=m;
+  $('#monthUnpaidTotal').textContent=money(total);
+  $('#monthUnpaidCount').textContent=rows.length+' 筆';
+  $('#monthUnpaidBody').innerHTML=rows.length?rows.map(r=>`
+    <tr>
+      <td>${esc(r.date)}</td>
+      <td>${esc(r.time)}</td>
+      <td><strong>${esc(r.customer||'-')}</strong></td>
+      <td>${esc(r.driver||'-')}</td>
+      <td>${esc(r.plate||'-')}</td>
+      <td>${esc(r.pickup||'-')}</td>
+      <td>${esc(r.dropoff||'-')}</td>
+      <td class="amount"><strong>${money(r.amount)}</strong></td>
+      <td>${esc(r.note||'-')}</td>
+      <td><button class="mini" style="background:#e9f8f1;color:#147a4e" onclick="markCollected('${r.id}')">收款</button></td>
+    </tr>`).join(''):`<tr><td colspan="10" class="empty">這個月份沒有未收記帳款</td></tr>`;
+}
 function render(){
   const rows=filteredRows(),x=calc(rows);
   $('#kTotal').textContent=money(x.total);
@@ -458,6 +563,8 @@ function render(){
       </div></td>
     </tr>`).join(''):`<tr><td colspan="12" class="empty">目前沒有符合條件的紀錄</td></tr>`;
   renderCarDaily(rows);
+  renderPlateRanking();
+  renderMonthUnpaid();
 }
 
 $('.chip').forEach(btn=>btn.addEventListener('click',()=>{
