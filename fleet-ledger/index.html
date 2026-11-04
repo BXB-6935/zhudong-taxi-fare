@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-build" content="20261105-0003">
+<meta name="app-build" content="20261105-0004">
 <title>車行登記儀表板</title>
 <style>
 :root{
@@ -272,11 +272,11 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
 <script>
 const STORAGE_KEY='fleetLedgerRecordsV1';
 let currentRange='today';
+const pad=n=>String(n).padStart(2,'0');
 let selectedMonth=toISO(new Date()).slice(0,7);
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
-const pad=n=>String(n).padStart(2,'0');
 function toISO(d=new Date()){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
 function nowTime(){const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())}
 function money(v){return 'NT$ '+Number(v||0).toLocaleString('zh-TW')}
