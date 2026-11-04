@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-build" content="20261104-2220">
+<meta name="app-build" content="20261104-2235">
 <title>車行登記儀表板</title>
 <style>
 :root{
@@ -48,7 +48,7 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
 .row-actions{display:flex;gap:5px}.mini{border:0;border-radius:8px;padding:6px 8px;font-size:12px;font-weight:800;cursor:pointer}.edit{background:#edf4ff;color:#1768cf}.del{background:#fff0f0;color:#c84444}
 .empty{text-align:center;color:var(--muted);padding:24px}
 .summary{display:flex;justify-content:flex-end;gap:16px;flex-wrap:wrap;padding:12px 4px 0;font-size:13px;color:#475569}.summary strong{color:#172033}
-.tools{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:9px}
 @media(max-width:760px){
   .form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}
@@ -151,9 +151,14 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
     <div class="quick">
       <button class="chip active" data-range="today">今天</button>
       <button class="chip" data-range="month">本月</button>
+      <button class="chip" data-range="lastMonth">上月</button>
       <button class="chip" data-range="all">全部</button>
     </div>
     <div class="filters">
+      <div class="field">
+        <label>快速查詢月份</label>
+        <input type="month" id="filterMonth">
+      </div>
       <div class="field">
         <label>指定日期</label>
         <input type="date" id="filterDate">
@@ -187,7 +192,7 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
   </section>
 
   <section class="card">
-    <div class="section-title"><span>📋 總登記表</span><button class="secondary" id="csvBtn" style="width:auto;padding:8px 10px">匯出 CSV</button></div>
+    <div class="section-title"><span>📋 總登記表</span><button class="secondary" id="jpgBtn" style="width:auto;padding:8px 10px">匯出 JPG 報表</button></div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -217,6 +222,7 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
   <section class="card">
     <div class="section-title"><span>⚙️ 資料工具</span></div>
     <div class="tools">
+      <button class="secondary" id="csvBtn">匯出 CSV 明細</button>
       <button class="secondary" id="backupBtn">匯出 JSON 備份</button>
       <label class="secondary" style="text-align:center;cursor:pointer">
         匯入 JSON 備份
@@ -231,6 +237,7 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
 <script>
 const STORAGE_KEY='fleetLedgerRecordsV1';
 let currentRange='today';
+let selectedMonth=toISO(new Date()).slice(0,7);
 
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
@@ -362,11 +369,18 @@ function markCollected(id){
 window.editRecord=editRecord;window.deleteRecord=deleteRecord;window.markCollected=markCollected;
 
 function monthKey(date){return String(date||'').slice(0,7)}
+function shiftMonth(month,delta){
+  const [y,m]=month.split('-').map(Number);
+  const d=new Date(y,m-1+delta,1);
+  return d.getFullYear()+'-'+pad(d.getMonth()+1);
+}
 function filteredRows(){
   let rows=load();
   const today=toISO(),month=today.slice(0,7);
   if(currentRange==='today') rows=rows.filter(r=>r.date===today);
   if(currentRange==='month') rows=rows.filter(r=>monthKey(r.date)===month);
+  if(currentRange==='lastMonth') rows=rows.filter(r=>monthKey(r.date)===shiftMonth(month,-1));
+  if(currentRange==='customMonth') rows=rows.filter(r=>monthKey(r.date)===selectedMonth);
 
   const fd=$('#filterDate').value;
   const fp=normalizePlate($('#filterPlate').value);
@@ -422,7 +436,7 @@ function render(){
   $('#sCredit').textContent=money(x.unpaid);
   $('#sPaidCredit').textContent=money(x.paidCredit);
   $('#sTotal').textContent=money(x.total);
-  $('#rangeLabel').textContent=currentRange==='today'?'今天':currentRange==='month'?'本月':'全部紀錄';
+  $('#rangeLabel').textContent=currentRange==='today'?'今天':currentRange==='month'?'本月 '+toISO().slice(0,7):currentRange==='lastMonth'?'上月 '+shiftMonth(toISO().slice(0,7),-1):currentRange==='customMonth'?'月份 '+selectedMonth:'全部紀錄';
 
   $('#recordBody').innerHTML=rows.length?rows.map(r=>`
     <tr>
@@ -446,21 +460,118 @@ function render(){
   renderCarDaily(rows);
 }
 
-$$('.chip').forEach(btn=>btn.addEventListener('click',()=>{
+$('.chip').forEach(btn=>btn.addEventListener('click',()=>{
   currentRange=btn.dataset.range;
-  $$('.chip').forEach(x=>x.classList.toggle('active',x===btn));render();
+  const thisMonth=toISO().slice(0,7);
+  if(currentRange==='month'){$('#filterMonth').value=thisMonth;selectedMonth=thisMonth}
+  else if(currentRange==='lastMonth'){$('#filterMonth').value=shiftMonth(thisMonth,-1);selectedMonth=shiftMonth(thisMonth,-1)}
+  else if(currentRange==='today'){$('#filterMonth').value=''}
+  else if(currentRange==='all'){$('#filterMonth').value=''}
+  $('#filterDate').value='';
+  $('.chip').forEach(x=>x.classList.toggle('active',x===btn));render();
 }));
+$('#filterMonth').addEventListener('change',e=>{
+  if(e.target.value){
+    selectedMonth=e.target.value;
+    currentRange='customMonth';
+    $('#filterDate').value='';
+    $('.chip').forEach(x=>x.classList.remove('active'));
+  }
+  render();
+});
 ['filterDate','filterPlate','filterDriver','filterPayment','filterStatus'].forEach(id=>{
   $('#'+id).addEventListener((id==='filterPlate'||id==='filterDriver')?'input':'change',render);
 });
 $('#clearFilter').addEventListener('click',()=>{
-  $('#filterDate').value='';$('#filterPlate').value='';$('#filterDriver').value='';$('#filterPayment').value='';$('#filterStatus').value='';
-  currentRange='today';$$('.chip').forEach(x=>x.classList.toggle('active',x.dataset.range==='today'));render();
+  $('#filterMonth').value='';$('#filterDate').value='';$('#filterPlate').value='';$('#filterDriver').value='';$('#filterPayment').value='';$('#filterStatus').value='';
+  selectedMonth=toISO().slice(0,7);currentRange='today';$$('.chip').forEach(x=>x.classList.toggle('active',x.dataset.range==='today'));render();
 });
 $('#saveBtn').addEventListener('click',saveRecord);
 $('#resetBtn').addEventListener('click',resetForm);
 $('#fPayment').addEventListener('change',syncPaymentFields);
 $('#fPlate').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase()});
+
+
+function reportTitle(){
+  if(currentRange==='today')return toISO()+' 車行登記日報';
+  if(currentRange==='month')return toISO().slice(0,7)+' 車行登記月報';
+  if(currentRange==='lastMonth')return shiftMonth(toISO().slice(0,7),-1)+' 車行登記月報';
+  if(currentRange==='customMonth')return selectedMonth+' 車行登記月報';
+  return '車行登記報表';
+}
+function downloadCanvasJpg(canvas,name){
+  canvas.toBlob(blob=>{
+    if(!blob){alert('JPG 產生失敗');return}
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=name;a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1200);
+  },'image/jpeg',0.93);
+}
+function drawReportPage(rows,pageIndex,totalPages,summary){
+  const W=1600,padX=70,rowH=46,headH=310,tableHeadH=54,bottom=80;
+  const H=headH+tableHeadH+rows.length*rowH+bottom;
+  const c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d');
+  x.fillStyle='#ffffff';x.fillRect(0,0,W,H);
+  x.fillStyle='#0f2f5f';x.fillRect(0,0,W,150);
+  x.fillStyle='#ffffff';x.font='bold 42px -apple-system, BlinkMacSystemFont, sans-serif';
+  x.fillText('車行登記儀表板',padX,67);
+  x.font='26px -apple-system, BlinkMacSystemFont, sans-serif';
+  x.fillText(reportTitle(),padX,112);
+  x.textAlign='right';x.font='22px -apple-system, BlinkMacSystemFont, sans-serif';
+  x.fillText('第 '+(pageIndex+1)+' / '+totalPages+' 頁',W-padX,105);
+  x.textAlign='left';
+
+  const cards=[
+    ['總營收',summary.total],['現金',summary.cash],['記帳已收',summary.paidCredit],['記帳未收',summary.unpaid],['筆數',summary.count+' 筆']
+  ];
+  const cardW=(W-padX*2-16*4)/5;
+  cards.forEach((it,i)=>{
+    const cx=padX+i*(cardW+16),cy=175;
+    x.fillStyle='#f4f7fb';x.fillRect(cx,cy,cardW,92);
+    x.fillStyle='#64748b';x.font='20px -apple-system, BlinkMacSystemFont, sans-serif';x.fillText(it[0],cx+18,cy+31);
+    x.fillStyle='#172033';x.font='bold 27px -apple-system, BlinkMacSystemFont, sans-serif';
+    x.fillText(typeof it[1]==='number'?money(it[1]):it[1],cx+18,cy+68);
+  });
+
+  const cols=[
+    ['日期',120],['時間',90],['司機',135],['車牌',140],['上車',220],['下車',220],['金額',120],['方式',95],['客戶',190],['狀態',100]
+  ];
+  let y=headH;
+  x.fillStyle='#eaf1fb';x.fillRect(padX,y,W-padX*2,tableHeadH);
+  x.fillStyle='#334155';x.font='bold 20px -apple-system, BlinkMacSystemFont, sans-serif';
+  let xx=padX;
+  cols.forEach(([name,w])=>{x.fillText(name,xx+8,y+34);xx+=w});
+  rows.forEach((r,ri)=>{
+    y=headH+tableHeadH+ri*rowH;
+    x.fillStyle=ri%2===0?'#ffffff':'#f8fafc';x.fillRect(padX,y,W-padX*2,rowH);
+    x.fillStyle='#1f2937';x.font='19px -apple-system, BlinkMacSystemFont, sans-serif';
+    const vals=[r.date,r.time,r.driver||'-',r.plate,r.pickup||'-',r.dropoff||'-',money(r.amount),r.payment,r.customer||'-',r.status];
+    xx=padX;
+    vals.forEach((val,i)=>{
+      const w=cols[i][1];
+      let s=String(val??'');
+      const max=Math.max(4,Math.floor(w/18));
+      if(s.length>max)s=s.slice(0,max-1)+'…';
+      x.fillText(s,xx+8,y+30);xx+=w;
+    });
+    x.strokeStyle='#e5e7eb';x.beginPath();x.moveTo(padX,y+rowH);x.lineTo(W-padX,y+rowH);x.stroke();
+  });
+  x.fillStyle='#64748b';x.font='18px -apple-system, BlinkMacSystemFont, sans-serif';
+  x.fillText('匯出時間：'+new Date().toLocaleString('zh-TW'),padX,H-30);
+  return c;
+}
+$('#jpgBtn').addEventListener('click',()=>{
+  const rows=filteredRows();
+  if(!rows.length){alert('目前沒有可匯出的紀錄');return}
+  const summary=calc(rows),perPage=28,totalPages=Math.ceil(rows.length/perPage);
+  for(let p=0;p<totalPages;p++){
+    const pageRows=rows.slice(p*perPage,(p+1)*perPage);
+    const canvas=drawReportPage(pageRows,p,totalPages,summary);
+    const suffix=totalPages>1?'_第'+(p+1)+'頁':'';
+    setTimeout(()=>downloadCanvasJpg(canvas,reportTitle().replaceAll('/','-')+suffix+'.jpg'),p*350);
+  }
+});
 
 $('#csvBtn').addEventListener('click',()=>{
   const rows=filteredRows();
