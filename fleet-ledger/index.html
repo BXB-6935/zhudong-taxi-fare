@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-build" content="20261104-2352">
+<meta name="app-build" content="20261105-0003">
 <title>車行登記儀表板</title>
 <style>
 :root{
@@ -82,8 +82,9 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
         <input type="date" id="fDate">
       </div>
       <div class="field">
-        <label>時間</label>
+        <label>時間（記帳可留空）</label>
         <input type="time" id="fTime">
+        <button class="secondary" id="clearTimeBtn" type="button" style="width:auto;padding:7px 10px;align-self:flex-start;font-size:12px">不填時間</button>
       </div>
       <div class="field">
         <label>司機姓名</label>
@@ -350,7 +351,7 @@ function saveRecord(){
   const note=$('#fNote').value.trim();
 
   if(!date){setStatus('請選擇日期',true);return}
-  if(!time){setStatus('請輸入時間',true);return}
+  if(!time && payment!=='記帳'){setStatus('現金登記請輸入時間；記帳可留空',true);$('#fTime').focus();return}
   if(!driver){setStatus('請輸入司機姓名',true);$('#fDriver').focus();return}
   if(!plate){setStatus('請輸入車牌號碼',true);$('#fPlate').focus();return}
   if(!pickup){setStatus('請輸入上車地點',true);$('#fPickup').focus();return}
@@ -396,7 +397,7 @@ function editRecord(id){
   $('#editId').value=r.id;
   $('#editBadge').textContent='編輯模式';
   $('#fDate').value=r.date||toISO();
-  $('#fTime').value=r.time||nowTime();
+  $('#fTime').value=r.time??'';
   $('#fDriver').value=r.driver||'';
   $('#fPlate').value=r.plate||'';
   $('#fPickup').value=r.pickup||'';
@@ -537,7 +538,7 @@ function renderMonthUnpaid(){
   $('#monthUnpaidBody').innerHTML=rows.length?rows.map(r=>`
     <tr>
       <td>${esc(r.date)}</td>
-      <td>${esc(r.time)}</td>
+      <td>${esc(r.time||'-')}</td>
       <td><strong>${esc(r.customer||'-')}</strong></td>
       <td>${esc(r.driver||'-')}</td>
       <td>${esc(r.plate||'-')}</td>
@@ -565,7 +566,7 @@ function render(){
   $('#recordBody').innerHTML=rows.length?rows.map(r=>`
     <tr>
       <td>${esc(r.date)}</td>
-      <td>${esc(r.time)}</td>
+      <td>${esc(r.time||'-')}</td>
       <td>${esc(r.driver||'-')}</td>
       <td><strong>${esc(r.plate)}</strong></td>
       <td>${esc(r.pickup||'-')}</td>
@@ -622,6 +623,7 @@ $('#clearFilter').addEventListener('click',()=>{
 });
 $('#saveBtn').addEventListener('click',saveRecord);
 $('#resetBtn').addEventListener('click',resetForm);
+$('#clearTimeBtn').addEventListener('click',()=>{$('#fTime').value='';setStatus('時間已清空；記帳可直接儲存');});
 $('#fPayment').addEventListener('change',syncPaymentFields);
 $('#fPlate').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase()});
 
@@ -680,7 +682,7 @@ function drawReportPage(rows,pageIndex,totalPages,summary){
     y=headH+tableHeadH+ri*rowH;
     x.fillStyle=ri%2===0?'#ffffff':'#f8fafc';x.fillRect(padX,y,W-padX*2,rowH);
     x.fillStyle='#1f2937';x.font='19px -apple-system, BlinkMacSystemFont, sans-serif';
-    const vals=[r.date,r.time,r.driver||'-',r.plate,r.pickup||'-',r.dropoff||'-',money(r.amount),r.payment,r.customer||'-',r.status];
+    const vals=[r.date,r.time||'-',r.driver||'-',r.plate,r.pickup||'-',r.dropoff||'-',money(r.amount),r.payment,r.customer||'-',r.status];
     xx=padX;
     vals.forEach((val,i)=>{
       const w=cols[i][1];
