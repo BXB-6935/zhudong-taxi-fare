@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-build" content="20261105-0004">
+<meta name="app-build" content="20261105-1152">
 <title>車行登記儀表板</title>
 <style>
 :root{
@@ -114,8 +114,8 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
         </select>
       </div>
       <div class="field" id="customerField">
-        <label>記帳客戶／公司</label>
-        <input type="text" id="fCustomer" placeholder="記帳時填寫，例如 XX 公司">
+        <label>記帳客戶／公司（選填）</label>
+        <input type="text" id="fCustomer" placeholder="可以留空，例如 XX 公司">
       </div>
       <div class="field">
         <label>收款狀態</label>
@@ -357,7 +357,6 @@ function saveRecord(){
   if(!pickup){setStatus('請輸入上車地點',true);$('#fPickup').focus();return}
   if(!dropoff){setStatus('請輸入下車地點',true);$('#fDropoff').focus();return}
   if(amountRaw===''||!Number.isFinite(amount)||amount<0){setStatus('請確認金額',true);$('#fAmount').focus();return}
-  if(payment==='記帳'&&!customer){setStatus('記帳請填寫客戶或公司名稱',true);$('#fCustomer').focus();return}
 
   let rows=load();
   const editId=$('#editId').value;
