@@ -7,8 +7,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="app-build" content="20261105-1152">
-<title>車行登記儀表板</title>
+<meta name="app-build" content="20261110-2300">
+<title>車行記帳儀表板</title>
 <style>
 :root{
   --bg:#f4f7fb;--card:#fff;--text:#172033;--muted:#718096;--line:#e6ebf2;
@@ -50,6 +50,11 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
 .summary{display:flex;justify-content:flex-end;gap:16px;flex-wrap:wrap;padding:12px 4px 0;font-size:13px;color:#475569}.summary strong{color:#172033}
 .tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:9px}
+[hidden]{display:none!important}
+.add-option-row{display:flex;align-items:center;gap:7px}
+.add-option-row input{min-width:0;flex:1}
+.add-option-row button{width:auto;flex:none;padding:11px 12px}
+.credit-first{border-color:#f4d49a;background:#fffaf1}
 @media(max-width:760px){
   .form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}
   .kpis{grid-template-columns:1fr 1fr}
@@ -65,8 +70,8 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
 <header>
   <div class="header-row">
     <div>
-      <h1>🚕 車行登記儀表板</h1>
-      <div class="sub">司機・車輛・現金・記帳・應收管理</div>
+      <h1>🚕 車行記帳儀表板</h1>
+      <div class="sub">記帳優先・應收管理・現金兼用</div>
     </div>
     <div id="todayText" style="font-size:12px;opacity:.9"></div>
   </div>
@@ -74,7 +79,7 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
 
 <main>
   <section class="card">
-    <div class="section-title"><span>✍️ 新增登記</span><span id="editBadge" style="font-size:12px;color:#718096">新增模式</span></div>
+    <div class="section-title"><span>✍️ 新增記帳／現金</span><span id="editBadge" style="font-size:12px;color:#718096">新增模式</span></div>
     <input type="hidden" id="editId">
     <div class="form-grid">
       <div class="field">
@@ -87,12 +92,20 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
         <button class="secondary" id="clearTimeBtn" type="button" style="width:auto;padding:7px 10px;align-self:flex-start;font-size:12px">不填時間</button>
       </div>
       <div class="field">
-        <label>司機姓名</label>
-        <input type="text" id="fDriver" placeholder="例如 王大明" autocomplete="off">
+        <label>司機姓名（下拉選擇／可新增）</label>
+        <select id="fDriver"><option value="">請選擇司機</option></select>
+        <div class="add-option-row" id="driverAddRow" hidden>
+          <input type="text" id="fDriverNew" placeholder="輸入新司機姓名" autocomplete="off">
+          <button type="button" class="secondary" id="addDriverBtn">加入選單</button>
+        </div>
       </div>
       <div class="field">
-        <label>車牌號碼</label>
-        <input type="text" id="fPlate" placeholder="例如 ABC-1234" autocomplete="off">
+        <label>車牌號碼（下拉選擇／可新增）</label>
+        <select id="fPlate"><option value="">請選擇車牌</option></select>
+        <div class="add-option-row" id="plateAddRow" hidden>
+          <input type="text" id="fPlateNew" placeholder="輸入新車牌，例如 ABC-1234" autocomplete="off">
+          <button type="button" class="secondary" id="addPlateBtn">加入選單</button>
+        </div>
       </div>
       <div class="field">
         <label>上車地點</label>
@@ -109,8 +122,8 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
       <div class="field">
         <label>收款方式</label>
         <select id="fPayment">
-          <option value="現金">現金</option>
           <option value="記帳">記帳</option>
+          <option value="現金">現金</option>
         </select>
       </div>
       <div class="field" id="customerField">
@@ -139,10 +152,10 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
   <section class="card">
     <div class="section-title"><span>📊 收支總覽</span><span id="rangeLabel" style="font-size:12px;color:#718096"></span></div>
     <div class="kpis">
-      <div class="kpi total"><b>總營收</b><strong id="kTotal">NT$ 0</strong></div>
-      <div class="kpi cash"><b>現金收入</b><strong id="kCash">NT$ 0</strong></div>
       <div class="kpi credit"><b>記帳未收</b><strong id="kCredit">NT$ 0</strong></div>
       <div class="kpi paid"><b>記帳已收</b><strong id="kPaidCredit">NT$ 0</strong></div>
+      <div class="kpi total"><b>總營收</b><strong id="kTotal">NT$ 0</strong></div>
+      <div class="kpi cash"><b>現金收入</b><strong id="kCash">NT$ 0</strong></div>
       <div class="kpi count"><b>登記筆數</b><strong id="kCount">0 筆</strong></div>
     </div>
   </section>
@@ -192,6 +205,25 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
     </div>
   </section>
 
+  <section class="card credit-first">
+    <div class="section-title">
+      <span>📌 記帳未收清單｜優先查看</span>
+      <span id="unpaidMonthLabel" style="font-size:12px;color:#718096"></span>
+    </div>
+    <div class="kpis" style="margin-bottom:10px">
+      <div class="kpi credit"><b>本月未收總額</b><strong id="monthUnpaidTotal">NT$ 0</strong></div>
+      <div class="kpi count"><b>未收筆數</b><strong id="monthUnpaidCount">0 筆</strong></div>
+    </div>
+    <div class="table-wrap">
+      <table style="min-width:1180px">
+        <thead>
+          <tr><th>日期</th><th>時間</th><th>記帳客戶</th><th>司機</th><th>車牌</th><th>上車</th><th>下車</th><th>金額</th><th>備註</th><th>操作</th></tr>
+        </thead>
+        <tbody id="monthUnpaidBody"></tbody>
+      </table>
+    </div>
+  </section>
+
   <section class="card">
     <div class="section-title"><span>📋 總登記表</span><button class="secondary" id="jpgBtn" style="width:auto;padding:8px 10px">匯出 JPG 報表</button></div>
     <div class="table-wrap">
@@ -235,24 +267,7 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
     </div>
   </section>
 
-  <section class="card">
-    <div class="section-title">
-      <span>📌 月底記帳未收清單</span>
-      <span id="unpaidMonthLabel" style="font-size:12px;color:#718096"></span>
-    </div>
-    <div class="kpis" style="margin-bottom:10px">
-      <div class="kpi credit"><b>本月未收總額</b><strong id="monthUnpaidTotal">NT$ 0</strong></div>
-      <div class="kpi count"><b>未收筆數</b><strong id="monthUnpaidCount">0 筆</strong></div>
-    </div>
-    <div class="table-wrap">
-      <table style="min-width:1180px">
-        <thead>
-          <tr><th>日期</th><th>時間</th><th>記帳客戶</th><th>司機</th><th>車牌</th><th>上車</th><th>下車</th><th>金額</th><th>備註</th><th>操作</th></tr>
-        </thead>
-        <tbody id="monthUnpaidBody"></tbody>
-      </table>
-    </div>
-  </section>
+
 
   <section class="card">
     <div class="section-title"><span>⚙️ 資料工具</span></div>
@@ -265,7 +280,7 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
       </label>
       <button class="danger" id="clearAllBtn">清除全部資料</button>
     </div>
-    <div class="note">資料儲存在目前瀏覽器。更換手機或清除瀏覽器資料前，請先匯出 JSON 備份。</div>
+    <div class="note">登記與自行新增的司機／車牌選單儲存在目前瀏覽器；更換手機或清除資料前，請先匯出 JSON 備份。</div>
   </section>
 </main>
 
