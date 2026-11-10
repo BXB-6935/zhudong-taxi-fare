@@ -286,6 +286,8 @@ td.amount{text-align:right;font-weight:800}.badge{display:inline-block;border-ra
 
 <script>
 const STORAGE_KEY='fleetLedgerRecordsV1';
+const LOOKUP_KEY='fleetLedgerLookupsV1';
+const ADD_NEW='__add__';
 let currentRange='today';
 const pad=n=>String(n).padStart(2,'0');
 let selectedMonth=toISO(new Date()).slice(0,7);
@@ -322,6 +324,66 @@ function load(){
 function save(rows){localStorage.setItem(STORAGE_KEY,JSON.stringify(rows))}
 function setStatus(msg,bad=false){const el=$('#saveStatus');el.textContent=msg;el.style.color=bad?'#d94646':'#168453'}
 
+function loadLookups(){
+  try{
+    const x=JSON.parse(localStorage.getItem(LOOKUP_KEY)||'{}');
+    return {drivers:Array.isArray(x?.drivers)?x.drivers:[],plates:Array.isArray(x?.plates)?x.plates:[]};
+  }catch(e){return {drivers:[],plates:[]}}
+}
+function cleanLookup(kind,value){
+  return kind==='plates'?normalizePlate(value):String(value||'').trim();
+}
+function lookupValues(kind){
+  const fromRecords=load().map(r=>kind==='drivers'?r.driver:r.plate);
+  return [...new Set([...loadLookups()[kind],...fromRecords].map(x=>cleanLookup(kind,x)).filter(Boolean))]
+    .sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+}
+function dropdownConfig(kind){
+  return kind==='drivers'
+    ? {select:'#fDriver',field:'#fDriverNew',row:'#driverAddRow',name:'司機'}
+    : {select:'#fPlate',field:'#fPlateNew',row:'#plateAddRow',name:'車牌'};
+}
+function getChoice(kind){
+  const c=dropdownConfig(kind),selected=$(c.select).value;
+  return cleanLookup(kind,selected===ADD_NEW?$(c.field).value:selected);
+}
+function populateDropdown(kind,chosen=''){
+  const c=dropdownConfig(kind),el=$(c.select),items=lookupValues(kind);
+  const value=cleanLookup(kind,chosen);
+  if(value && value!==ADD_NEW && !items.includes(value))items.push(value);
+  el.innerHTML='<option value="">請選擇'+c.name+'</option>'+
+    items.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('')+
+    '<option value="'+ADD_NEW+'">＋ 新增'+c.name+'</option>';
+  el.value=chosen===ADD_NEW?ADD_NEW:value;
+  $(c.row).hidden=chosen!==ADD_NEW;
+}
+function refreshDropdowns(driver='',plate=''){
+  populateDropdown('drivers',driver);
+  populateDropdown('plates',plate);
+}
+function toggleAddRow(kind){
+  const c=dropdownConfig(kind),creating=$(c.select).value===ADD_NEW;
+  $(c.row).hidden=!creating;
+  if(creating)$(c.field).focus();
+}
+function persistLookups(driver,plate){
+  const x=loadLookups();
+  if(driver)x.drivers=[...new Set([...x.drivers.map(v=>cleanLookup('drivers',v)),cleanLookup('drivers',driver)].filter(Boolean))];
+  if(plate)x.plates=[...new Set([...x.plates.map(v=>cleanLookup('plates',v)),cleanLookup('plates',plate)].filter(Boolean))];
+  localStorage.setItem(LOOKUP_KEY,JSON.stringify(x));
+}
+function addToDropdown(kind){
+  const c=dropdownConfig(kind),value=cleanLookup(kind,$(c.field).value);
+  if(!value){setStatus('請先輸入新'+c.name,true);$(c.field).focus();return}
+  try{persistLookups(kind==='drivers'?value:'',kind==='plates'?value:'')}
+  catch(err){setStatus('無法儲存'+c.name+'選單，請檢查瀏覽器儲存空間',true);return}
+  const other=kind==='drivers'?getChoice('plates'):getChoice('drivers');
+  refreshDropdowns(kind==='drivers'?value:other,kind==='plates'?value:other);
+  $(c.field).value='';
+  setStatus('✓ 已新增'+c.name+'：'+value);
+}
+
+
 function syncPaymentFields(){
   const isCredit=$('#fPayment').value==='記帳';
   $('#customerField').style.opacity=isCredit?'1':'.55';
@@ -331,21 +393,25 @@ function syncPaymentFields(){
   }else{
     $('#fCustomer').value='';
     $('#fStatus').value='已收';
+    if(!$('#fTime').value)$('#fTime').value=nowTime();
   }
 }
 function resetForm(){
+  refreshDropdowns();
+  $('#fDriverNew').value='';
+  $('#fPlateNew').value='';
   $('#editId').value='';
   $('#editBadge').textContent='新增模式';
   $('#fDate').value=toISO();
-  $('#fTime').value=nowTime();
+  $('#fTime').value='';
   $('#fDriver').value='';
   $('#fPlate').value='';
   $('#fPickup').value='';
   $('#fDropoff').value='';
   $('#fAmount').value='';
-  $('#fPayment').value='現金';
+  $('#fPayment').value='記帳';
   $('#fCustomer').value='';
-  $('#fStatus').value='已收';
+  $('#fStatus').value='未收';
   $('#fNote').value='';
   syncPaymentFields();
   setStatus('');
@@ -354,8 +420,8 @@ function resetForm(){
 function saveRecord(){
   const date=$('#fDate').value;
   const time=$('#fTime').value;
-  const driver=$('#fDriver').value.trim();
-  const plate=normalizePlate($('#fPlate').value);
+  const driver=getChoice('drivers');
+  const plate=getChoice('plates');
   const pickup=$('#fPickup').value.trim();
   const dropoff=$('#fDropoff').value.trim();
   const amountRaw=$('#fAmount').value;
@@ -382,7 +448,8 @@ function saveRecord(){
     updatedAt:new Date().toISOString()
   };
   if(editId) rows=rows.map(r=>r.id===editId?rec:r); else rows.push(rec);
-  save(rows);
+  try{save(rows)}catch(err){setStatus('儲存失敗：請檢查瀏覽器儲存空間',true);return}
+  try{persistLookups(driver,plate)}catch(err){} // 登記已儲存，選單可由既有紀錄自動建立
 
   // 儲存後自動切到該筆日期，避免補登舊日期時被「今天」篩選掉。
   currentRange='all';
@@ -412,8 +479,9 @@ function editRecord(id){
   $('#editBadge').textContent='編輯模式';
   $('#fDate').value=r.date||toISO();
   $('#fTime').value=r.time??'';
-  $('#fDriver').value=r.driver||'';
-  $('#fPlate').value=r.plate||'';
+  refreshDropdowns(r.driver||'',r.plate||'');
+  $('#fDriverNew').value='';
+  $('#fPlateNew').value='';
   $('#fPickup').value=r.pickup||'';
   $('#fDropoff').value=r.dropoff||'';
   $('#fAmount').value=r.amount??'';
@@ -639,7 +707,12 @@ $('#saveBtn').addEventListener('click',saveRecord);
 $('#resetBtn').addEventListener('click',resetForm);
 $('#clearTimeBtn').addEventListener('click',()=>{$('#fTime').value='';setStatus('時間已清空；記帳可直接儲存');});
 $('#fPayment').addEventListener('change',syncPaymentFields);
-$('#fPlate').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase()});
+$('#fDriver').addEventListener('change',()=>toggleAddRow('drivers'));
+$('#fPlate').addEventListener('change',()=>toggleAddRow('plates'));
+$('#fDriverNew').addEventListener('input',()=>setStatus(''));
+$('#fPlateNew').addEventListener('input',e=>{e.target.value=e.target.value.toUpperCase();setStatus('')});
+$('#addDriverBtn').addEventListener('click',()=>addToDropdown('drivers'));
+$('#addPlateBtn').addEventListener('click',()=>addToDropdown('plates'));
 
 
 function reportTitle(){
