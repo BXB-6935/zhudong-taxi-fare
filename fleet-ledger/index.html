@@ -377,8 +377,7 @@ function addToDropdown(kind){
   if(!value){setStatus('請先輸入新'+c.name,true);$(c.field).focus();return}
   try{persistLookups(kind==='drivers'?value:'',kind==='plates'?value:'')}
   catch(err){setStatus('無法儲存'+c.name+'選單，請檢查瀏覽器儲存空間',true);return}
-  const other=kind==='drivers'?getChoice('plates'):getChoice('drivers');
-  refreshDropdowns(kind==='drivers'?value:other,kind==='plates'?value:other);
+  populateDropdown(kind,value);
   $(c.field).value='';
   setStatus('✓ 已新增'+c.name+'：'+value);
 }
@@ -806,7 +805,7 @@ $('#csvBtn').addEventListener('click',()=>{
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='車行登記表_'+toISO()+'.csv';a.click();URL.revokeObjectURL(a.href);
 });
 $('#backupBtn').addEventListener('click',()=>{
-  const data={version:2,exportedAt:new Date().toISOString(),records:load()};
+  const data={version:3,exportedAt:new Date().toISOString(),records:load(),lookups:loadLookups()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='車行登記儀表板備份_'+toISO()+'.json';a.click();URL.revokeObjectURL(a.href);
 });
@@ -818,14 +817,22 @@ $('#restoreInput').addEventListener('change',e=>{
       const data=JSON.parse(rd.result),rows=Array.isArray(data)?data:data.records;
       if(!Array.isArray(rows))throw new Error('格式錯誤');
       if(!confirm('匯入後會以備份檔取代目前資料，確定繼續？'))return;
-      save(rows.map(normalizeRecord));render();alert('備份已匯入');
+      save(rows.map(normalizeRecord));
+      if(!Array.isArray(data) && data.lookups){
+        const imported={
+          drivers:Array.isArray(data.lookups.drivers)?data.lookups.drivers:[],
+          plates:Array.isArray(data.lookups.plates)?data.lookups.plates:[]
+        };
+        localStorage.setItem(LOOKUP_KEY,JSON.stringify(imported));
+      }
+      resetForm();render();alert('備份已匯入');
     }catch(err){alert('備份檔格式錯誤')}
     e.target.value='';
   };
   rd.readAsText(file);
 });
 $('#clearAllBtn').addEventListener('click',()=>{
-  if(confirm('確定清除全部車行登記資料？此動作無法復原。')){localStorage.removeItem(STORAGE_KEY);render();resetForm()}
+  if(confirm('確定清除全部登記資料及自行新增的司機／車牌選單？此動作無法復原。')){localStorage.removeItem(STORAGE_KEY);localStorage.removeItem(LOOKUP_KEY);resetForm();render()}
 });
 $('#todayText').textContent=toISO();
 resetForm();render();
